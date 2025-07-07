@@ -1,0 +1,607 @@
+🔥 TRS LEADERSHIP PHILOSOPHY 🔥
+import React, { useState } from 'react';
+import { BookOpen, Shield, Heart, Users, Wrench, CheckCircle, Lightbulb, Smile } from 'lucide-react';
+
+const TRSLeadershipPhilosophy = () => {
+  const [activeSection, setActiveSection] = useState('overview');
+
+  const leadershipPrinciples = [
+    {
+      principle: "Education Over Frustration",
+      icon: BookOpen,
+      description: "When someone doesn't understand, we teach. When systems break, we explain. Knowledge builds confidence.",
+      examples: [
+        "Machine malfunction → Explain the fix, don't just fix it",
+        "Procedure confusion → Walk through the steps, show the reason",
+        "Safety concern → Educate on the risk, demonstrate the solution"
+      ]
+    },
+    {
+      principle: "Understanding User Requirements",
+      icon: Users,
+      description: "Every request has a reason. Every need has a story. Listen first, judge never.",
+      examples: [
+        "Operator needs faster process → Understand the pressure they're under",
+        "Manager wants different report → Find out what decision they're making",
+        "Client has urgent timeline → Learn why it matters to their business"
+      ]
+    },
+    {
+      principle: "Legal Not Illegal - Bend Never Break",
+      icon: Shield,
+      description: "We find creative solutions within the rules. Flexibility with integrity. Innovation with compliance.",
+      examples: [
+        "Safety regulation → Find efficient ways to exceed requirements",
+        "Union agreement → Work with representatives to improve conditions",
+        "Client demand → Deliver what they need through proper channels"
+      ]
+    },
+    {
+      principle: "Humor to Lift, Not Put Down",
+      icon: Smile,
+      description: "Laughter builds teams. Jokes should elevate, never diminish. Use humor to heal, not hurt.",
+      examples: [
+        "Mistake happens → Light joke, then solution focus",
+        "Stress rises → Well-timed comment to break tension",
+        "Success achieved → Celebrate with shared laughter"
+      ]
+    },
+    {
+      principle: "Inspire What We Built",
+      icon: Heart,
+      description: "Show them the meaning behind the work. Help them see their contribution to something bigger.",
+      examples: [
+        "Daily tasks → Connect to company mission and customer impact",
+        "System improvements → Explain how it makes everyone's job better",
+        "Team achievements → Celebrate the collective accomplishment"
+      ]
+    },
+    {
+      principle: "Constructive Criticism as Growth",
+      icon: Lightbulb,
+      description: "It's OK to be wrong, but not OK to not learn. We grow together, learn together, understand right from wrong together.",
+      examples: [
+        "Mistake made → 'Let's figure out the right way together'",
+        "Process improvement → 'I learned something new too - here's what works better'",
+        "Knowledge sharing → 'If I'm wrong, we learn together - that's how we both grow'"
+      ]
+    }
+  ];
+
+  const workplaceEducationAreas = [
+    {
+      area: "Machine Checks & Audits",
+      purpose: "Prevent failures before they happen",
+      education: "Understanding wear patterns, hearing abnormal sounds, spotting early warning signs",
+      leadership: "Teach the 'why' behind each check, not just the 'what'"
+    },
+    {
+      area: "Stocktake & Inventory",
+      purpose: "Maintain operational flow and cost control",
+      education: "Impact of accuracy on customer delivery, cost implications of errors",
+      leadership: "Show how their precision affects the whole operation"
+    },
+    {
+      area: "Maintenance Protocols",
+      purpose: "Extend equipment life and ensure safety",
+      education: "Preventive vs reactive maintenance costs, safety impact of neglect",
+      leadership: "Explain how good maintenance protects jobs and increases efficiency"
+    },
+    {
+      area: "Moving Parts & Rust Prevention",
+      purpose: "Asset protection and operational reliability",
+      education: "Environmental factors, proper lubrication, storage conditions",
+      leadership: "Connect daily care to long-term business sustainability"
+    }
+  ];
+
+  const hostileSituationProtocols = [
+    {
+      situation: "Angry Customer/Client",
+      calmResponse: "Listen completely before responding",
+      education: "Understand their pressure and constraints",
+      solution: "Find what they actually need vs what they're demanding"
+    },
+    {
+      situation: "Equipment Breakdown During Rush",
+      calmResponse: "Assess without panic, communicate status clearly",
+      education: "Explain failure mode and repair timeline",
+      solution: "Develop workaround while fixing root cause"
+    },
+    {
+      situation: "Team Conflict",
+      calmResponse: "Separate emotions from facts",
+      education: "Help each side understand the other's perspective",
+      solution: "Focus on shared goals and collaborative solutions"
+    },
+    {
+      situation: "Safety Violation",
+      calmResponse: "Stop work immediately, no blame assignment",
+      education: "Explain the specific risk and potential consequences",
+      solution: "Implement prevention measures and training"
+    },
+    {
+      situation: "Deadline Pressure",
+      calmResponse: "Acknowledge the urgency without compromising standards",
+      education: "Show realistic timelines and resource requirements",
+      solution: "Prioritize critical path items and communicate progress"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-900 text-white p-6 font-sans">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8 border-b border-blue-500/30 pb-6">
+          <h1 className="text-4xl font-bold text-orange-400 mb-2">
+            🔥 TRS LEADERSHIP PHILOSOPHY 🔥
+          </h1>
+          <h2 className="text-2xl text-blue-300 mb-4">
+            ⚓ EMPEROR DANIEL'S FOUNDATIONAL PRINCIPLES
+          </h2>
+          <p className="text-gray-300 italic text-lg">
+            "Education and meaning behind workplaces - keeping calm in hostile situations, no frustration, just understanding"
+          </p>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex flex-wrap gap-4 mb-8 border-b border-gray-700">
+          {[
+            { id: 'overview', label: 'CORE PRINCIPLES', icon: Heart },
+            { id: 'education', label: 'WORKPLACE EDUCATION', icon: BookOpen },
+            { id: 'hostile', label: 'HOSTILE SITUATIONS', icon: Shield },
+            { id: 'growth', label: 'CONSTRUCTIVE CRITICISM', icon: Lightbulb },
+            { id: 'inspiration', label: 'INSPIRATION FRAMEWORK', icon: Lightbulb }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveSection(tab.id)}
+              className={`px-6 py-3 font-bold transition-all duration-300 border-b-2 ${
+                activeSection === tab.id
+                  ? 'text-orange-400 border-orange-400 bg-orange-400/10'
+                  : 'text-gray-400 border-transparent hover:text-blue-400 hover:border-blue-400/50'
+              }`}
+            >
+              <tab.icon className="inline w-4 h-4 mr-2" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Core Principles Section */}
+        {activeSection === 'overview' && (
+          <div className="space-y-8">
+            <div className="bg-gray-800/50 border border-blue-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                💪 THE SIX PILLARS OF TRS LEADERSHIP
+              </h2>
+              <div className="space-y-6">
+                {leadershipPrinciples.map((principle, index) => (
+                  <div key={index} className="bg-black/30 border border-gray-700 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300">
+                    <div className="flex items-start gap-4">
+                      <principle.icon className="w-8 h-8 text-blue-400 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-blue-300 mb-3">{principle.principle}</h3>
+                        <p className="text-gray-300 mb-4">{principle.description}</p>
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-green-400 text-sm">REAL-WORLD EXAMPLES:</h4>
+                          {principle.examples.map((example, exIndex) => (
+                            <div key={exIndex} className="text-sm text-gray-400 bg-gray-900/50 p-2 rounded">
+                              • {example}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-blue-900/30 to-green-900/30 border border-green-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-green-400 mb-4">🎯 THE TRS LEARNING MINDSET</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-blue-300">WHEN SOMEONE MAKES A MISTAKE:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• "It's OK to be wrong - let's learn the right way"</li>
+                    <li>• "We figure this out together"</li>
+                    <li>• "How do we prevent this next time?"</li>
+                    <li>• "What did we both learn from this?"</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-bold text-blue-300">WHEN YOU'RE WRONG AS LEADER:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• "I was wrong - here's what I learned"</li>
+                    <li>• "Let's find the right answer together"</li>
+                    <li>• "This is how we both grow"</li>
+                    <li>• "Thank you for teaching me something new"</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-bold text-blue-300">MUTUAL GROWTH PRINCIPLE:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Learning goes both ways</li>
+                    <li>• Everyone teaches, everyone learns</li>
+                    <li>• Understanding right from wrong together</li>
+                    <li>• Growth through constructive criticism</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Workplace Education Section */}
+        {activeSection === 'education' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 border border-blue-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                📚 WORKPLACE EDUCATION FRAMEWORK
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "The site gives education and meaning behind most workplaces - machine checks, audits, stocktake, maintenance on all moving parts that rust"
+              </p>
+              
+              <div className="space-y-6">
+                {workplaceEducationAreas.map((area, index) => (
+                  <div key={index} className="bg-black/30 border border-gray-700 rounded-lg p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                      <div>
+                        <h3 className="font-bold text-blue-300 mb-2">{area.area}</h3>
+                        <Wrench className="w-6 h-6 text-blue-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-green-400 text-sm mb-1">PURPOSE:</h4>
+                        <p className="text-gray-300 text-sm">{area.purpose}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-yellow-400 text-sm mb-1">EDUCATION:</h4>
+                        <p className="text-gray-300 text-sm">{area.education}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-orange-400 text-sm mb-1">LEADERSHIP:</h4>
+                        <p className="text-gray-300 text-sm">{area.leadership}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-blue-400 mb-4">
+                🔧 UNDERSTANDING THE MEANING BEHIND THE WORK
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-bold text-green-400 mb-3">CONNECT DAILY TASKS TO BIGGER PURPOSE:</h4>
+                  <ul className="text-gray-300 space-y-2 text-sm">
+                    <li>• Machine maintenance → Customer reliability and worker safety</li>
+                    <li>• Inventory accuracy → On-time delivery and cost control</li>
+                    <li>• Quality checks → Brand reputation and customer trust</li>
+                    <li>• Safety protocols → Protecting families and livelihoods</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-bold text-green-400 mb-3">EXPLAIN THE IMPACT OF EXCELLENCE:</h4>
+                  <ul className="text-gray-300 space-y-2 text-sm">
+                    <li>• Good work creates job security</li>
+                    <li>• Efficient operations allow for better wages</li>
+                    <li>• Quality delivery builds lasting customer relationships</li>
+                    <li>• Safe practices protect everyone's future</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Hostile Situations Section */}
+        {activeSection === 'hostile' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 border border-red-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                🛡️ KEEPING CALM IN HOSTILE SITUATIONS
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "No frustration, just education and understanding the meaning behind the user's requirement"
+              </p>
+
+              <div className="space-y-4">
+                {hostileSituationProtocols.map((protocol, index) => (
+                  <div key={index} className="bg-black/30 border border-gray-700 rounded-lg p-6 hover:border-red-500/50 transition-all duration-300">
+                    <h3 className="text-lg font-bold text-red-300 mb-4">{protocol.situation}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-blue-900/20 p-4 rounded">
+                        <h4 className="font-bold text-blue-400 text-sm mb-2">1. CALM RESPONSE:</h4>
+                        <p className="text-gray-300 text-sm">{protocol.calmResponse}</p>
+                      </div>
+                      <div className="bg-green-900/20 p-4 rounded">
+                        <h4 className="font-bold text-green-400 text-sm mb-2">2. EDUCATION:</h4>
+                        <p className="text-gray-300 text-sm">{protocol.education}</p>
+                      </div>
+                      <div className="bg-orange-900/20 p-4 rounded">
+                        <h4 className="font-bold text-orange-400 text-sm mb-2">3. SOLUTION:</h4>
+                        <p className="text-gray-300 text-sm">{protocol.solution}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-red-900/20 to-blue-900/20 border border-purple-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-purple-400 mb-4">⚡ THE HOSTILE SITUATION FORMULA</h3>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white mb-4">
+                  CALM + EDUCATION + UNDERSTANDING = RESOLUTION
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="bg-blue-900/30 p-4 rounded">
+                    <h4 className="font-bold text-blue-300 mb-2">STAY CALM</h4>
+                    <p className="text-gray-300">Your emotional state sets the tone for everyone else</p>
+                  </div>
+                  <div className="bg-green-900/30 p-4 rounded">
+                    <h4 className="font-bold text-green-300 mb-2">EDUCATE</h4>
+                    <p className="text-gray-300">Information reduces fear and builds trust</p>
+                  </div>
+                  <div className="bg-orange-900/30 p-4 rounded">
+                    <h4 className="font-bold text-orange-300 mb-2">UNDERSTAND</h4>
+                    <p className="text-gray-300">Their requirement has a legitimate reason behind it</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Constructive Criticism Section */}
+        {activeSection === 'growth' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 border border-green-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                💡 CONSTRUCTIVE CRITICISM AS GROWTH CATALYST
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "It's OK to be wrong, but not OK to not learn the right answer. If I'm wrong, we learn together - goes both ways. That's how we grow and understand right from wrong."
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-green-400 mb-4">✅ THE RIGHT WAY</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-2">When They Make a Mistake:</h4>
+                      <p className="text-gray-300 text-sm mb-2">"It's alright mate, we've all been there. Let's figure out the right way together."</p>
+                      <p className="text-green-400 text-xs">→ Creates learning opportunity, builds trust</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-2">When You're Wrong:</h4>
+                      <p className="text-gray-300 text-sm mb-2">"I got that wrong - thanks for catching it. This is how we both get better."</p>
+                      <p className="text-green-400 text-xs">→ Models humility, encourages feedback</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-2">When Learning Together:</h4>
+                      <p className="text-gray-300 text-sm mb-2">"Neither of us knew that - good thing we figured it out as a team."</p>
+                      <p className="text-green-400 text-xs">→ Shared growth, mutual respect</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-red-400 mb-4">❌ THE WRONG WAY</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-bold text-red-300 mb-2">Blame Without Learning:</h4>
+                      <p className="text-gray-300 text-sm mb-2">"You did that wrong again! How many times do I have to tell you?"</p>
+                      <p className="text-red-400 text-xs">→ Creates fear, shuts down learning</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-red-300 mb-2">Defensive Leadership:</h4>
+                      <p className="text-gray-300 text-sm mb-2">"I wasn't wrong, you just didn't understand what I meant."</p>
+                      <p className="text-red-400 text-xs">→ Blocks growth, damages credibility</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-red-300 mb-2">One-Way Teaching:</h4>
+                      <p className="text-gray-300 text-sm mb-2">"Just do what I say and don't question it."</p>
+                      <p className="text-red-400 text-xs">→ Misses learning opportunities, stifles innovation</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-blue-400 mb-4">🔄 THE MUTUAL LEARNING CYCLE</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-white font-bold">1</span>
+                    </div>
+                    <h4 className="font-bold text-blue-300 mb-2">ACKNOWLEDGE</h4>
+                    <p className="text-gray-300 text-sm">"Someone made a mistake or has a different view"</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-green-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-white font-bold">2</span>
+                    </div>
+                    <h4 className="font-bold text-green-300 mb-2">EXPLORE</h4>
+                    <p className="text-gray-300 text-sm">"Let's understand what happened and why"</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-orange-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-white font-bold">3</span>
+                    </div>
+                    <h4 className="font-bold text-orange-300 mb-2">LEARN</h4>
+                    <p className="text-gray-300 text-sm">"Find the right answer together"</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-white font-bold">4</span>
+                    </div>
+                    <h4 className="font-bold text-purple-300 mb-2">GROW</h4>
+                    <p className="text-gray-300 text-sm">"Both parties understand more than before"</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-green-900/30 to-blue-900/30 border border-green-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-green-400 mb-4">💬 REAL-WORLD EXAMPLES</h3>
+              <div className="space-y-4">
+                <div className="bg-black/30 p-4 rounded-lg">
+                  <h4 className="font-bold text-yellow-400 mb-2">Scenario: Machine Setup Error</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-red-300 text-sm mb-2"><strong>Wrong Approach:</strong></p>
+                      <p className="text-gray-300 text-sm">"You set that up wrong again! Don't you listen?"</p>
+                    </div>
+                    <div>
+                      <p className="text-green-300 text-sm mb-2"><strong>TRS Approach:</strong></p>
+                      <p className="text-gray-300 text-sm">"Let's figure out what happened here. I might have missed something in my explanation too. Show me your process."</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-black/30 p-4 rounded-lg">
+                  <h4 className="font-bold text-yellow-400 mb-2">Scenario: Leader's Wrong Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-red-300 text-sm mb-2"><strong>Wrong Approach:</strong></p>
+                      <p className="text-gray-300 text-sm">"That's not what I meant. You should have asked for clarification."</p>
+                    </div>
+                    <div>
+                      <p className="text-green-300 text-sm mb-2"><strong>TRS Approach:</strong></p>
+                      <p className="text-gray-300 text-sm">"I gave you the wrong info there - my mistake. Thanks for catching that. Now we both know the right way."</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-black/30 p-4 rounded-lg">
+                  <h4 className="font-bold text-yellow-400 mb-2">Scenario: Process Improvement Discussion</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-red-300 text-sm mb-2"><strong>Wrong Approach:</strong></p>
+                      <p className="text-gray-300 text-sm">"We've always done it this way. Don't fix what's not broken."</p>
+                    </div>
+                    <div>
+                      <p className="text-green-300 text-sm mb-2"><strong>TRS Approach:</strong></p>
+                      <p className="text-gray-300 text-sm">"Show me what you're thinking. I might learn something new, or we might find an even better way together."</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {activeSection === 'inspiration' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 border border-green-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                ✨ INSPIRE WHAT WE BUILT
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "Sense of humor to lift, not put down - inspire what we built"
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-green-400">🎯 DAILY INSPIRATION TECHNIQUES</h3>
+                  <div className="space-y-3">
+                    <div className="bg-green-900/20 p-4 rounded">
+                      <h4 className="font-bold text-green-300 mb-2">Connect Work to Purpose</h4>
+                      <p className="text-gray-300 text-sm">"That pallet you just moved perfectly? That's medicine getting to a hospital on time."</p>
+                    </div>
+                    <div className="bg-blue-900/20 p-4 rounded">
+                      <h4 className="font-bold text-blue-300 mb-2">Celebrate Small Wins</h4>
+                      <p className="text-gray-300 text-sm">"Zero incidents this week - that's 40 families going home safe every day."</p>
+                    </div>
+                    <div className="bg-orange-900/20 p-4 rounded">
+                      <h4 className="font-bold text-orange-300 mb-2">Show Growth Impact</h4>
+                      <p className="text-gray-300 text-sm">"Remember when you couldn't operate that crane? Look at you training the new guy now."</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-blue-400">😂 HUMOR THAT LIFTS</h3>
+                  <div className="space-y-3">
+                    <div className="bg-purple-900/20 p-4 rounded">
+                      <h4 className="font-bold text-purple-300 mb-2">Team Building Humor</h4>
+                      <p className="text-gray-300 text-sm">"We move freight better than your footy team moves the ball!"</p>
+                    </div>
+                    <div className="bg-yellow-900/20 p-4 rounded">
+                      <h4 className="font-bold text-yellow-300 mb-2">Pressure Relief Humor</h4>
+                      <p className="text-gray-300 text-sm">"If we worked any harder, we'd have to charge ourselves overtime!"</p>
+                    </div>
+                    <div className="bg-teal-900/20 p-4 rounded">
+                      <h4 className="font-bold text-teal-300 mb-2">Achievement Humor</h4>
+                      <p className="text-gray-300 text-sm">"That efficiency rating is so good, the computer thinks we're cheating!"</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-green-900/30 to-blue-900/30 border border-green-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-green-400 mb-4">🏆 THE INSPIRATION CYCLE</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="bg-green-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-white font-bold">1</span>
+                  </div>
+                  <h4 className="font-bold text-green-300 mb-2">RECOGNIZE</h4>
+                  <p className="text-gray-300 text-sm">Notice good work and effort, not just results</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-white font-bold">2</span>
+                  </div>
+                  <h4 className="font-bold text-blue-300 mb-2">CONNECT</h4>
+                  <p className="text-gray-300 text-sm">Link their work to bigger purpose and impact</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-orange-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-white font-bold">3</span>
+                  </div>
+                  <h4 className="font-bold text-orange-300 mb-2">CELEBRATE</h4>
+                  <p className="text-gray-300 text-sm">Share success with the team using appropriate humor</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-white font-bold">4</span>
+                  </div>
+                  <h4 className="font-bold text-purple-300 mb-2">ASPIRE</h4>
+                  <p className="text-gray-300 text-sm">Set new challenges that build on success</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-8 text-center border-t border-gray-700 pt-6">
+          <div className="bg-gradient-to-r from-orange-900/20 to-blue-900/20 border border-orange-500/30 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-orange-400 mb-4">
+              ⚡👑💪🔥 THE TRS LEADERSHIP PROMISE 🔥💪👑⚡
+            </h2>
+            <p className="text-green-300 text-lg mb-4">
+              "We bend, we never break. We educate, we never frustrate. We lift with humor, we inspire with purpose."
+            </p>
+            <div className="text-gray-300 text-sm space-y-2">
+              <p><strong className="text-blue-400">Legal, not illegal</strong> - We find solutions within the rules</p>
+              <p><strong className="text-green-400">Understanding over judgment</strong> - Every requirement has a reason</p>
+              <p><strong className="text-orange-400">Education over frustration</strong> - Knowledge builds confidence</p>
+              <p><strong className="text-purple-400">Inspiration over intimidation</strong> - Show them the meaning in their work</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TRSLeadershipPhilosophy;
