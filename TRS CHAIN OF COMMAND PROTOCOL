@@ -1,0 +1,572 @@
+🔥 TRS CHAIN OF COMMAND PROTOCOL
+import React, { useState } from 'react';
+import { Users, Shield, AlertTriangle, CheckCircle, ArrowUp, ArrowDown, Clock, Wrench } from 'lucide-react';
+
+const TRSChainOfCommand = () => {
+  const [activeSection, setActiveSection] = useState('overview');
+
+  const chainLevels = [
+    {
+      level: "BOSS/SITE MANAGER",
+      icon: Users,
+      responsibilities: "Sets TRS standards, allocates resources, final decision authority",
+      skills: "Strategic TRS vision, resource management, regulatory compliance",
+      backup: "Regional Manager or Owner",
+      delegation: "Authority to General Managers for daily TRS operations"
+    },
+    {
+      level: "GENERAL MANAGER",
+      icon: Shield,
+      responsibilities: "Implements TRS protocols, manages supervisor training, operational oversight",
+      skills: "TRS protocol mastery, supervisor coaching, performance management",
+      backup: "Assistant GM or Senior Supervisor",
+      delegation: "Daily operations to supervisors, maintains TRS standards"
+    },
+    {
+      level: "SUPERVISORS/FOREMEN",
+      icon: AlertTriangle,
+      responsibilities: "Direct TRS implementation, toolbox meetings, real-time decisions",
+      skills: "Operator coaching, safety leadership, TRS culture building",
+      backup: "Senior Operator or Peer Supervisor",
+      delegation: "Specific tasks to operators, maintains quality standards"
+    },
+    {
+      level: "TEAM LEADERS",
+      icon: CheckCircle,
+      responsibilities: "Frontline TRS execution, peer support, immediate problem solving",
+      skills: "Equipment expertise, mentoring, conflict resolution",
+      backup: "Experienced Operator or Supervisor",
+      delegation: "Work coordination among operators"
+    },
+    {
+      level: "OPERATORS",
+      icon: Wrench,
+      responsibilities: "Execute TRS protocols, provide feedback, continuous learning",
+      skills: "Equipment operation, safety compliance, TRS culture participation",
+      backup: "Cross-trained team members",
+      delegation: "None - but input valued for improvements"
+    }
+  ];
+
+  const toolboxMeetingStructure = {
+    duration: "15 minutes maximum",
+    timing: "Before each shift starts",
+    mandatory: ["Safety focus", "Daily objectives", "TRS reminders", "Equipment status"],
+    leadership: "Supervisor or designated Team Leader",
+    documentation: "Meeting log with attendance and key points"
+  };
+
+  const delegationProtocols = [
+    {
+      situation: "Routine Daily Operations",
+      delegator: "Supervisor",
+      delegate: "Team Leader",
+      authority: "Work assignments, quality checks, minor adjustments",
+      escalation: "Safety issues, equipment problems, personnel conflicts"
+    },
+    {
+      situation: "Equipment Maintenance",
+      delegator: "General Manager", 
+      delegate: "Supervisor",
+      authority: "Schedule routine maintenance, coordinate with operators",
+      escalation: "Major repairs, budget approvals, safety shutdowns"
+    },
+    {
+      situation: "Training New Operators",
+      delegator: "Supervisor",
+      delegate: "Senior Operator/Team Leader", 
+      authority: "Basic skills training, TRS culture introduction",
+      escalation: "Performance issues, safety concerns, certification decisions"
+    },
+    {
+      situation: "Crisis Management",
+      delegator: "Boss/Site Manager",
+      delegate: "General Manager",
+      authority: "Immediate response decisions, resource allocation",
+      escalation: "Media contact, legal issues, major incidents"
+    }
+  ];
+
+  const absenceManagement = [
+    {
+      absent: "Operator",
+      coverage: "Cross-trained team member or temporary assignment",
+      decision: "Team Leader or Supervisor",
+      escalation: "If multiple absences or critical skills missing"
+    },
+    {
+      absent: "Team Leader",
+      coverage: "Senior Operator steps up or Supervisor covers directly",
+      decision: "Supervisor",
+      escalation: "If extended absence or complex operations planned"
+    },
+    {
+      absent: "Supervisor",
+      coverage: "General Manager or peer Supervisor covers",
+      decision: "General Manager",
+      escalation: "If multiple supervisors absent or critical decisions needed"
+    },
+    {
+      absent: "General Manager",
+      coverage: "Assistant GM or Boss covers directly",
+      decision: "Boss/Site Manager",
+      escalation: "Immediate notification to higher management"
+    }
+  ];
+
+  const leadershipFailurePoints = [
+    {
+      failure: "Skills Not Passed Down",
+      cause: "Supervisor doesn't train or develops poorly",
+      impact: "Operators make mistakes, safety risks, quality issues",
+      solution: "TRS skill verification, mandatory coaching protocols"
+    },
+    {
+      failure: "No Backup Coverage",
+      cause: "Chain doesn't support team leaders",
+      impact: "Single points of failure, stress, burnout",
+      solution: "Cross-training requirements, support protocols"
+    },
+    {
+      failure: "Poor Delegation",
+      cause: "Wrong level making decisions",
+      impact: "Bottlenecks, frustration, inconsistent standards",
+      solution: "Clear authority matrix, escalation protocols"
+    },
+    {
+      failure: "Absence Mismanagement",
+      cause: "No coverage plan or poor communication",
+      impact: "Operations disrupted, safety compromised, team stress",
+      solution: "Absence protocols, backup identification, communication systems"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-slate-900 text-white p-6 font-sans">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8 border-b border-blue-500/30 pb-6">
+          <h1 className="text-4xl font-bold text-orange-400 mb-2">
+            🔥 TRS CHAIN OF COMMAND PROTOCOL 🔥
+          </h1>
+          <h2 className="text-2xl text-blue-300 mb-4">
+            ⚓ THE BACKBONE OF OPERATIONAL EXCELLENCE
+          </h2>
+          <p className="text-gray-300 italic text-lg">
+            "Skills in jobs always fail with the wrong leadership - the chain of command must pass down correct skills, handle delegation, and cover absences"
+          </p>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex flex-wrap gap-4 mb-8 border-b border-gray-700">
+          {[
+            { id: 'overview', label: 'CHAIN STRUCTURE', icon: Users },
+            { id: 'toolbox', label: 'TOOLBOX MEETINGS', icon: Clock },
+            { id: 'delegation', label: 'DELEGATION PROTOCOLS', icon: ArrowDown },
+            { id: 'absence', label: 'ABSENCE MANAGEMENT', icon: Shield },
+            { id: 'failures', label: 'FAILURE PREVENTION', icon: AlertTriangle }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveSection(tab.id)}
+              className={`px-6 py-3 font-bold transition-all duration-300 border-b-2 ${
+                activeSection === tab.id
+                  ? 'text-orange-400 border-orange-400 bg-orange-400/10'
+                  : 'text-gray-400 border-transparent hover:text-blue-400 hover:border-blue-400/50'
+              }`}
+            >
+              <tab.icon className="inline w-4 h-4 mr-2" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Chain Structure Section */}
+        {activeSection === 'overview' && (
+          <div className="space-y-8">
+            <div className="bg-gray-800/50 border border-blue-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                👑 TRS CHAIN OF COMMAND STRUCTURE
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "The boss in the job passing down the correct skills to general managers, supervisors - the chain of command with proper delegation, mitigation, and absence handling"
+              </p>
+              
+              <div className="space-y-6">
+                {chainLevels.map((level, index) => (
+                  <div key={index} className="bg-black/30 border border-gray-700 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300">
+                    <div className="flex items-start gap-4">
+                      <level.icon className="w-8 h-8 text-blue-400 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-blue-300 mb-3">{level.level}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
+                            <h4 className="font-bold text-green-400 text-sm mb-1">RESPONSIBILITIES:</h4>
+                            <p className="text-gray-300 text-sm">{level.responsibilities}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-yellow-400 text-sm mb-1">KEY SKILLS:</h4>
+                            <p className="text-gray-300 text-sm">{level.skills}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-purple-400 text-sm mb-1">BACKUP COVERAGE:</h4>
+                            <p className="text-gray-300 text-sm">{level.backup}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-orange-400 text-sm mb-1">DELEGATION AUTHORITY:</h4>
+                            <p className="text-gray-300 text-sm">{level.delegation}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-blue-900/30 to-green-900/30 border border-green-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-green-400 mb-4">🎯 TRS CHAIN OF COMMAND PRINCIPLES</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <h4 className="font-bold text-blue-300">SKILL CASCADE:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Each level teaches the next</li>
+                    <li>• Knowledge flows both up and down</li>
+                    <li>• Practical skills, not just theory</li>
+                    <li>• Regular verification and updates</li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h4 className="font-bold text-blue-300">SUPPORT STRUCTURE:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Chain backs up team leaders</li>
+                    <li>• Coverage plans for all positions</li>
+                    <li>• Never work short without mitigation</li>
+                    <li>• Escalation when support needed</li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h4 className="font-bold text-blue-300">ACCOUNTABILITY FLOW:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Clear decision authority at each level</li>
+                    <li>• Escalation protocols defined</li>
+                    <li>• No decision orphans</li>
+                    <li>• Results flow back up the chain</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Toolbox Meetings Section */}
+        {activeSection === 'toolbox' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 border border-blue-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                🛠️ TOOLBOX SAFETY & START MEETINGS
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "Safety start meetings before the job starts - setting the tone, sharing information, ensuring readiness"
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-green-400 mb-4">📋 MEETING STRUCTURE</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">Duration:</h4>
+                      <p className="text-gray-300 text-sm">{toolboxMeetingStructure.duration}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">Timing:</h4>
+                      <p className="text-gray-300 text-sm">{toolboxMeetingStructure.timing}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">Leadership:</h4>
+                      <p className="text-gray-300 text-sm">{toolboxMeetingStructure.leadership}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">Documentation:</h4>
+                      <p className="text-gray-300 text-sm">{toolboxMeetingStructure.documentation}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-blue-400 mb-4">✅ MANDATORY ELEMENTS</h3>
+                  <div className="space-y-2">
+                    {toolboxMeetingStructure.mandatory.map((element, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span className="text-gray-300 text-sm">{element}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-orange-400 mb-4">🎯 TRS TOOLBOX MEETING FLOW</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div className="text-center">
+                    <div className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-sm">1</span>
+                    </div>
+                    <h4 className="font-bold text-blue-300 text-sm mb-1">SAFETY MOMENT</h4>
+                    <p className="text-gray-300 text-xs">Specific hazard or lesson learned</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-green-600 w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-sm">2</span>
+                    </div>
+                    <h4 className="font-bold text-green-300 text-sm mb-1">DAILY OBJECTIVES</h4>
+                    <p className="text-gray-300 text-xs">What needs to be accomplished</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-orange-600 w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-sm">3</span>
+                    </div>
+                    <h4 className="font-bold text-orange-300 text-sm mb-1">TRS FOCUS</h4>
+                    <p className="text-gray-300 text-xs">Culture point or skill emphasis</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-purple-600 w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-sm">4</span>
+                    </div>
+                    <h4 className="font-bold text-purple-300 text-sm mb-1">EQUIPMENT STATUS</h4>
+                    <p className="text-gray-300 text-xs">Availability and concerns</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-red-600 w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-sm">5</span>
+                    </div>
+                    <h4 className="font-bold text-red-300 text-sm mb-1">QUESTIONS/CONCERNS</h4>
+                    <p className="text-gray-300 text-xs">Open floor for team input</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delegation Section */}
+        {activeSection === 'delegation' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 border border-blue-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                ⬇️ DELEGATION & MITIGATION PROTOCOLS
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "Delegation and mitigation must be handled by the team leader and goes higher in the chain - backs him, covers him, or work short"
+              </p>
+
+              <div className="space-y-4">
+                {delegationProtocols.map((protocol, index) => (
+                  <div key={index} className="bg-black/30 border border-gray-700 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300">
+                    <h3 className="text-lg font-bold text-blue-300 mb-4">{protocol.situation}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <h4 className="font-bold text-green-400 text-sm mb-2">DELEGATOR:</h4>
+                        <p className="text-gray-300 text-sm">{protocol.delegator}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-blue-400 text-sm mb-2">DELEGATE:</h4>
+                        <p className="text-gray-300 text-sm">{protocol.delegate}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-yellow-400 text-sm mb-2">AUTHORITY GRANTED:</h4>
+                        <p className="text-gray-300 text-sm">{protocol.authority}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-red-400 text-sm mb-2">ESCALATION TRIGGERS:</h4>
+                        <p className="text-gray-300 text-sm">{protocol.escalation}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-green-900/30 to-blue-900/30 border border-green-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-green-400 mb-4">🎯 DELEGATION SUCCESS FACTORS</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <h4 className="font-bold text-blue-300 mb-3">CLEAR AUTHORITY:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Specific scope defined</li>
+                    <li>• Decision limits clear</li>
+                    <li>• Escalation points identified</li>
+                    <li>• Time boundaries set</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-bold text-green-300 mb-3">ADEQUATE SUPPORT:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Resources available</li>
+                    <li>• Backup accessible</li>
+                    <li>• Communication open</li>
+                    <li>• Coaching provided</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-bold text-orange-300 mb-3">ACCOUNTABILITY FLOW:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Regular check-ins</li>
+                    <li>• Results reporting</li>
+                    <li>• Learning capture</li>
+                    <li>• Adjustment process</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Absence Management Section */}
+        {activeSection === 'absence' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 border border-red-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                🛡️ ABSENCE MANAGEMENT PROTOCOLS
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "Absence must be handled by the team leader and goes higher in the chain - either backs him, covers him, or work short with mitigation"
+              </p>
+
+              <div className="space-y-4">
+                {absenceManagement.map((scenario, index) => (
+                  <div key={index} className="bg-black/30 border border-gray-700 rounded-lg p-6">
+                    <h3 className="text-lg font-bold text-red-300 mb-4">When {scenario.absent} is Absent</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-blue-900/20 p-4 rounded">
+                        <h4 className="font-bold text-blue-400 text-sm mb-2">COVERAGE PLAN:</h4>
+                        <p className="text-gray-300 text-sm">{scenario.coverage}</p>
+                      </div>
+                      <div className="bg-green-900/20 p-4 rounded">
+                        <h4 className="font-bold text-green-400 text-sm mb-2">DECISION AUTHORITY:</h4>
+                        <p className="text-gray-300 text-sm">{scenario.decision}</p>
+                      </div>
+                      <div className="bg-orange-900/20 p-4 rounded">
+                        <h4 className="font-bold text-orange-400 text-sm mb-2">ESCALATION TRIGGER:</h4>
+                        <p className="text-gray-300 text-sm">{scenario.escalation}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-yellow-400 mb-4">⚠️ WORKING SHORT MITIGATION</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-bold text-yellow-300 mb-3">WHEN TO WORK SHORT:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• No qualified coverage available</li>
+                    <li>• Temporary situation (half day or less)</li>
+                    <li>• Non-critical operations only</li>
+                    <li>• Safety not compromised</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-bold text-yellow-300 mb-3">MITIGATION REQUIREMENTS:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Reduced scope of operations</li>
+                    <li>• Extra supervision assigned</li>
+                    <li>• Clear communication to all</li>
+                    <li>• Plan for full coverage ASAP</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Failure Prevention Section */}
+        {activeSection === 'failures' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 border border-red-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-orange-400 mb-6">
+                ⚠️ LEADERSHIP FAILURE PREVENTION
+              </h2>
+              <p className="text-gray-300 mb-6">
+                "Skills in jobs always fail with the wrong leadership - identifying and preventing chain of command failures"
+              </p>
+
+              <div className="space-y-6">
+                {leadershipFailurePoints.map((failure, index) => (
+                  <div key={index} className="bg-red-900/20 border border-red-500/30 rounded-lg p-6">
+                    <h3 className="text-lg font-bold text-red-400 mb-4">{failure.failure}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <h4 className="font-bold text-red-300 text-sm mb-2">ROOT CAUSE:</h4>
+                        <p className="text-gray-300 text-sm">{failure.cause}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-yellow-300 text-sm mb-2">IMPACT:</h4>
+                        <p className="text-gray-300 text-sm">{failure.impact}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-green-300 text-sm mb-2">TRS SOLUTION:</h4>
+                        <p className="text-gray-300 text-sm">{failure.solution}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-red-900/30 to-green-900/30 border border-green-500/30 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-green-400 mb-4">🎯 TRS LEADERSHIP SUCCESS INDICATORS</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h4 className="font-bold text-green-300">STRONG CHAIN INDICATORS:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Skills consistently demonstrated at all levels</li>
+                    <li>• Smooth coverage during absences</li>
+                    <li>• Clear decision making without bottlenecks</li>
+                    <li>• Proactive problem solving</li>
+                    <li>• High team morale and retention</li>
+                    <li>• Continuous improvement happening</li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h4 className="font-bold text-red-300">WEAK CHAIN WARNING SIGNS:</h4>
+                  <ul className="text-gray-300 space-y-1 text-sm">
+                    <li>• Repeated mistakes at same level</li>
+                    <li>• Panic when key people absent</li>
+                    <li>• Decisions stuck waiting for approval</li>
+                    <li>• Reactive firefighting mode</li>
+                    <li>• High turnover or frustration</li>
+                    <li>• No knowledge transfer happening</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-8 text-center border-t border-gray-700 pt-6">
+          <div className="bg-gradient-to-r from-orange-900/20 to-blue-900/20 border border-orange-500/30 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-orange-400 mb-4">
+              ⚡👑💪🔥 THE TRS CHAIN OF COMMAND PROMISE 🔥💪👑⚡
+            </h2>
+            <p className="text-green-300 text-lg mb-4">
+              "Every level teaches the next. Every absence has coverage. Every decision has support. Skills flow down, support flows up."
+            </p>
+            <div className="text-gray-300 text-sm space-y-2">
+              <p><strong className="text-blue-400">Skills Cascade:</strong> Knowledge flows from boss to operator with verification</p>
+              <p><strong className="text-green-400">Support Structure:</strong> Chain backs team leaders, covers absences, mitigates gaps</p>
+              <p><strong className="text-orange-400">Clear Authority:</strong> Every level knows their decisions and escalation points</p>
+              <p><strong className="text-purple-400">Failure Prevention:</strong> Wrong leadership identified and corrected quickly</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TRSChainOfCommand;
