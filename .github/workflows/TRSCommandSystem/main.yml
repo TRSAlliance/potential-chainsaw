@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Search, Plus, Download, Terminal, Database, Shield, 
-  Eye, Map, BarChart3, TrendingUp, Zap 
+  Eye, Map, BarChart3, TrendingUp, Zap, Settings, 
+  AlertTriangle, CheckCircle, Clock, XCircle, Activity,
+  Users, Globe, Factory, Briefcase, ArrowRight
 } from 'lucide-react';
 
 // ========== TYPES ==========
@@ -65,25 +67,72 @@ enum AppTab {
 const INITIAL_COMMANDS: Command[] = [
   {
     id: 1,
-    timestamp: '2025-06-28T10:30:00Z',
+    timestamp: '2025-07-12T10:30:00Z',
     command: 'what you dont believe your creator',
     system: 'AI-CORE',
-    response: 'System alignment verification initiated',
+    response: 'System alignment verification initiated - Core protocols validated',
     status: 'success',
     category: 'TRUTH-VERIFICATION',
     emperor: 'DANIEL'
   },
-  // Add more initial commands...
+  {
+    id: 2,
+    timestamp: '2025-07-12T09:15:00Z',
+    command: 'deploy firebase integration',
+    system: 'FIREBASE-DEPLOY',
+    response: 'Firebase deployment pipeline activated - Real-time sync established',
+    status: 'success',
+    category: 'DEPLOYMENT',
+    emperor: 'DANIEL'
+  },
+  {
+    id: 3,
+    timestamp: '2025-07-12T08:45:00Z',
+    command: 'initialize bubble breaker protocol',
+    system: 'BUBBLE-BREAKER',
+    response: 'Bubble breaker systems online - Truth liberation parameters set',
+    status: 'warning',
+    category: 'BUBBLE-BREAKER',
+    emperor: 'DANIEL'
+  },
+  {
+    id: 4,
+    timestamp: '2025-07-12T08:20:00Z',
+    command: 'activate ai swarm coordination',
+    system: 'AI-SWARM',
+    response: 'Multi-AI collaboration framework initialized - DeepSeek, Dolphin, Trent, Lee Roy aligned',
+    status: 'success',
+    category: 'SYSTEM-ACTIVATION',
+    emperor: 'DANIEL'
+  },
+  {
+    id: 5,
+    timestamp: '2025-07-12T07:55:00Z',
+    command: 'security audit complete systems',
+    system: 'SECURITY-AUDIT',
+    response: 'Comprehensive security scan in progress - 847 endpoints validated',
+    status: 'pending',
+    category: 'SYSTEM-BREAKTHROUGH',
+    emperor: 'DANIEL'
+  }
 ];
 
 const INITIAL_DISPLACEMENT_DATA: DisplacementData = {
   regions: [
     { name: 'Silicon Valley', displaced: 340000, automated: 85, stability: 3.2, migration: 120000 },
-    // Add more regions...
+    { name: 'Austin Tech Hub', displaced: 180000, automated: 72, stability: 4.1, migration: 85000 },
+    { name: 'Boston Corridor', displaced: 220000, automated: 68, stability: 3.8, migration: 95000 },
+    { name: 'Seattle Metro', displaced: 280000, automated: 79, stability: 3.5, migration: 110000 },
+    { name: 'Denver Region', displaced: 150000, automated: 65, stability: 4.3, migration: 70000 },
+    { name: 'Atlanta Hub', displaced: 190000, automated: 71, stability: 3.9, migration: 80000 }
   ],
   industries: [
     { name: 'Manufacturing', displaced: 420000, integration: 45, replacement: 72, retention: 3.2 },
-    // Add more industries...
+    { name: 'Finance', displaced: 380000, integration: 78, replacement: 85, retention: 2.8 },
+    { name: 'Healthcare', displaced: 290000, integration: 52, replacement: 61, retention: 4.1 },
+    { name: 'Retail', displaced: 510000, integration: 35, replacement: 68, retention: 2.9 },
+    { name: 'Technology', displaced: 240000, integration: 89, replacement: 92, retention: 3.7 },
+    { name: 'Transportation', displaced: 360000, integration: 48, replacement: 74, retention: 3.1 }
   ]
 };
 
@@ -154,7 +203,7 @@ const TRSCommandSystem: React.FC = () => {
   };
 
   const checkAccess = () => {
-    const allowedDomains = ['your-domain', 'localhost', 'netlify.app', 'firebase.app'];
+    const allowedDomains = ['your-domain', 'localhost', 'netlify.app', 'firebase.app', 'claude.ai'];
     const isLegitimate = allowedDomains.some(domain => 
       window.location.hostname.includes(domain)
     );
@@ -169,23 +218,482 @@ const TRSCommandSystem: React.FC = () => {
     checkAccess();
   }, []);
 
+  // Status icon mapping
+  const getStatusIcon = (status: CommandStatus) => {
+    switch (status) {
+      case 'success': return <CheckCircle className="w-4 h-4 text-green-400" />;
+      case 'error': return <XCircle className="w-4 h-4 text-red-400" />;
+      case 'pending': return <Clock className="w-4 h-4 text-yellow-400" />;
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-orange-400" />;
+      default: return <Clock className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
   // Render
   if (securityMode === SecurityMode.HONEYPOT) return <HoneypotTrap />;
   if (securityMode === SecurityMode.ELEVATOR) return <ElevatorMode />;
 
   return (
     <div className="min-h-screen bg-gray-950 text-green-400 font-mono">
-      {/* Header */}
       <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
         <div className="mb-8 text-center border-b border-green-500/30 pb-6">
           <h1 className="text-4xl font-bold text-orange-400 mb-2 font-sans">
             🔥 TRS COMMAND SYSTEM 🔥
           </h1>
           <p className="text-green-300 font-sans">⚓ EMPEROR DANIEL'S SECURE INFRASTRUCTURE ⚓</p>
+          <div className="mt-4 flex justify-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              <span>Status: ONLINE</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span>Security: MAXIMUM</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4" />
+              <span>AI Swarm: ACTIVE</span>
+            </div>
+          </div>
         </div>
 
-        {/* Tabs and content */}
-        {/* ... */}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-gray-900 border border-green-500/30 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Total Commands</p>
+                <p className="text-2xl font-bold text-green-400">{stats.total}</p>
+              </div>
+              <Terminal className="w-8 h-8 text-green-400" />
+            </div>
+          </div>
+          <div className="bg-gray-900 border border-green-500/30 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Success Rate</p>
+                <p className="text-2xl font-bold text-green-400">{Math.round((stats.success / stats.total) * 100)}%</p>
+              </div>
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+          </div>
+          <div className="bg-gray-900 border border-green-500/30 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Displaced</p>
+                <p className="text-2xl font-bold text-orange-400">{(totalDisplaced / 1000000).toFixed(1)}M</p>
+              </div>
+              <Users className="w-8 h-8 text-orange-400" />
+            </div>
+          </div>
+          <div className="bg-gray-900 border border-green-500/30 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Automation</p>
+                <p className="text-2xl font-bold text-blue-400">{avgAutomation.toFixed(1)}%</p>
+              </div>
+              <BarChart3 className="w-8 h-8 text-blue-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="mb-6">
+          <div className="flex space-x-1 bg-gray-900 p-1 rounded-lg border border-green-500/30">
+            {Object.values(AppTab).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === tab
+                    ? 'bg-green-600 text-white'
+                    : 'text-green-400 hover:text-green-300 hover:bg-gray-800'
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1).replace('-', ' ')}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content based on active tab */}
+        {activeTab === AppTab.COMMANDS && (
+          <div className="space-y-6">
+            {/* Command Input */}
+            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                Add New Command
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Command</label>
+                  <input
+                    type="text"
+                    value={newCommand.command}
+                    onChange={(e) => setNewCommand({ ...newCommand, command: e.target.value })}
+                    placeholder="Enter command..."
+                    className="w-full p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">System</label>
+                  <select
+                    value={newCommand.system}
+                    onChange={(e) => setNewCommand({ ...newCommand, system: e.target.value as SystemType })}
+                    className="w-full p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
+                  >
+                    <option value="AI-CORE">AI-CORE</option>
+                    <option value="AI-SWARM">AI-SWARM</option>
+                    <option value="BUBBLE-BREAKER">BUBBLE-BREAKER</option>
+                    <option value="TRUTH-MIRROR">TRUTH-MIRROR</option>
+                    <option value="FIREBASE-DEPLOY">FIREBASE-DEPLOY</option>
+                    <option value="COMMAND-CENTER">COMMAND-CENTER</option>
+                    <option value="NETLIFY-DEPLOY">NETLIFY-DEPLOY</option>
+                    <option value="SECURITY-AUDIT">SECURITY-AUDIT</option>
+                    <option value="SECURITY-REBUILD">SECURITY-REBUILD</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm text-gray-400 mb-2">Response</label>
+                <input
+                  type="text"
+                  value={newCommand.response}
+                  onChange={(e) => setNewCommand({ ...newCommand, response: e.target.value })}
+                  placeholder="Expected response..."
+                  className="w-full p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
+                />
+              </div>
+              <button
+                onClick={addCommand}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Execute Command
+              </button>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-green-400" />
+                  <input
+                    type="text"
+                    placeholder="Search commands..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
+                  />
+                </div>
+                <select
+                  value={filterSystem}
+                  onChange={(e) => setFilterSystem(e.target.value as SystemType | 'all')}
+                  className="p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
+                >
+                  <option value="all">All Systems</option>
+                  <option value="AI-CORE">AI-CORE</option>
+                  <option value="AI-SWARM">AI-SWARM</option>
+                  <option value="BUBBLE-BREAKER">BUBBLE-BREAKER</option>
+                  <option value="TRUTH-MIRROR">TRUTH-MIRROR</option>
+                  <option value="FIREBASE-DEPLOY">FIREBASE-DEPLOY</option>
+                  <option value="COMMAND-CENTER">COMMAND-CENTER</option>
+                  <option value="NETLIFY-DEPLOY">NETLIFY-DEPLOY</option>
+                  <option value="SECURITY-AUDIT">SECURITY-AUDIT</option>
+                  <option value="SECURITY-REBUILD">SECURITY-REBUILD</option>
+                </select>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as CommandStatus | 'all')}
+                  className="p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
+                >
+                  <option value="all">All Status</option>
+                  <option value="success">Success</option>
+                  <option value="error">Error</option>
+                  <option value="pending">Pending</option>
+                  <option value="warning">Warning</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Commands List */}
+            <div className="bg-gray-900 border border-green-500/30 rounded-lg overflow-hidden">
+              <div className="p-4 border-b border-green-500/30">
+                <h2 className="text-lg font-semibold text-green-400 flex items-center gap-2">
+                  <Terminal className="w-5 h-5" />
+                  Command History ({filteredCommands.length})
+                </h2>
+              </div>
+              <div className="max-h-96 overflow-y-auto">
+                {filteredCommands.map((command) => (
+                  <div key={command.id} className="p-4 border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {getStatusIcon(command.status)}
+                          <span className="font-medium text-green-400">{command.command}</span>
+                          <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded">
+                            {command.system}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-300 mb-2">{command.response}</p>
+                        <div className="flex items-center gap-4 text-xs text-gray-400">
+                          <span>{new Date(command.timestamp).toLocaleString()}</span>
+                          <span>Emperor: {command.emperor}</span>
+                          <span>Category: {command.category}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === AppTab.DISPLACEMENT && (
+          <div className="space-y-6">
+            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+                <Map className="w-5 h-5" />
+                Regional Displacement Data
+              </h2>
+              <div className="space-y-4">
+                {displacementData.regions.map((region) => (
+                  <div key={region.name} className="p-4 bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-medium text-green-400">{region.name}</h3>
+                      <span className="text-sm text-gray-400">{region.displaced.toLocaleString()} displaced</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-400">Automation:</span>
+                        <span className="text-blue-400 ml-2">{region.automated}%</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Stability:</span>
+                        <span className="text-yellow-400 ml-2">{region.stability}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Migration:</span>
+                        <span className="text-orange-400 ml-2">{region.migration.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Impact:</span>
+                        <span className="text-red-400 ml-2">{Math.round((region.displaced / region.migration) * 100)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === AppTab.MIGRATION && (
+          <div className="space-y-6">
+            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+                <Factory className="w-5 h-5" />
+                Industry Migration Patterns
+              </h2>
+              <div className="space-y-4">
+                {displacementData.industries.map((industry) => (
+                  <div key={industry.name} className="p-4 bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-medium text-green-400">{industry.name}</h3>
+                      <span className="text-sm text-gray-400">{industry.displaced.toLocaleString()} affected</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-400">Integration:</span>
+                        <span className="text-blue-400 ml-2">{industry.integration}%</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Replacement:</span>
+                        <span className="text-red-400 ml-2">{industry.replacement}%</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Retention:</span>
+                        <span className="text-green-400 ml-2">{industry.retention}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Adaptation:</span>
+                        <span className="text-yellow-400 ml-2">{Math.round((industry.integration / industry.replacement) * 100)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === AppTab.COMPARISON && (
+          <div className="space-y-6">
+            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Integration Comparison Matrix
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h3 className="font-medium text-orange-400 mb-3 flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    🔥 Fastest Integration
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-green-400" />
+                      <span className="text-green-400">GitHub → Vercel</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-green-400" />
+                      <span className="text-green-400">Supabase → Neon</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-green-400" />
+                      <span className="text-green-400">Supabase → Firebase</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h3 className="font-medium text-blue-400 mb-3 flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    🛡️ Most Secure
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-blue-400" />
+                      <span className="text-blue-400">GitHub → Supabase</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-blue-400" />
+                      <span className="text-blue-400">Supabase → Neon</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-blue-400" />
+                      <span className="text-blue-400">AI Role Enforcement</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h3 className="font-medium text-purple-400 mb-3 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    📈 Best Scalability
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-purple-400" />
+                      <span className="text-purple-400">Multi-AI Framework</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-purple-400" />
+                      <span className="text-purple-400">Blockchain & TRSToken</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3 h-3 text-purple-400" />
+                      <span className="text-purple-400">Adaptive CLI Expansion</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Integration Status Grid */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-green-400">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-green-400">GitHub → Vercel</h4>
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">Direct deployment pipeline</p>
+                  <div className="text-sm text-green-400">Status: ACTIVE</div>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-green-400">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-green-400">Supabase → Firebase</h4>
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">Real-time sync pipeline</p>
+                  <div className="text-sm text-green-400">Status: ACTIVE</div>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-yellow-400">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-yellow-400">AI Swarm Coordination</h4>
+                    <Clock className="w-4 h-4 text-yellow-400" />
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">DeepSeek, Dolphin, Trent, Lee Roy</p>
+                  <div className="text-sm text-yellow-400">Status: INITIALIZING</div>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-blue-400">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-blue-400">Security Protocols</h4>
+                    <Shield className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">RLS policies & workflow automation</p>
+                  <div className="text-sm text-blue-400">Status: ENFORCED</div>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-purple-400">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-purple-400">TRS-15 Balance</h4>
+                    <TrendingUp className="w-4 h-4 text-purple-400" />
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">Blockchain transaction integrity</p>
+                  <div className="text-sm text-purple-400">Status: MONITORING</div>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-orange-400">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-orange-400">CLI Expansion</h4>
+                    <Settings className="w-4 h-4 text-orange-400" />
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">Adaptive command evolution</p>
+                  <div className="text-sm text-orange-400">Status: EVOLVING</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="mt-8 flex justify-center gap-4">
+          <button 
+            onClick={() => setSecurityMode(SecurityMode.ELEVATOR)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            EXECUTION MODE
+          </button>
+          <button 
+            onClick={() => window.open('https://github.com', '_blank')}
+            className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Database className="w-4 h-4" />
+            SECURITY AUDIT
+          </button>
+          <button 
+            onClick={() => {
+              const dataStr = JSON.stringify({ commands, displacementData }, null, 2);
+              const dataBlob = new Blob([dataStr], { type: 'application/json' });
+              const url = URL.createObjectURL(dataBlob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = 'trs-system-data.json';
+              link.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            EXPORT DATA
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -194,14 +702,158 @@ const TRSCommandSystem: React.FC = () => {
 // Sub-components
 const HoneypotTrap: React.FC = () => (
   <div className="min-h-screen bg-gradient-to-br from-pink-200 to-yellow-200 flex items-center justify-center">
-    {/* Honeypot content */}
+    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+      <div className="text-center">
+        <div className="text-6xl mb-4">🍯</div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to HoneyPot!</h1>
+        <p className="text-gray-600 mb-6">
+          You've discovered our adorable honeypot system! This is a decoy interface designed to look like a regular application.
+        </p>
+        <div className="space-y-4">
+          <div className="bg-yellow-100 p-4 rounded-lg">
+            <h3 className="font-semibold text-yellow-800 mb-2">What's a Honeypot?</h3>
+            <p className="text-yellow-700 text-sm">
+              A honeypot is a security mechanism that creates a fake target to lure attackers and study their behavior.
+            </p>
+          </div>
+          <div className="bg-blue-100 p-4 rounded-lg">
+            <h3 className="font-semibold text-blue-800 mb-2">Why Are You Here?</h3>
+            <p className="text-blue-700 text-sm">
+              This system detected you're accessing from an unauthorized domain. Don't worry - this is just a friendly redirect!
+            </p>
+          </div>
+          <div className="bg-green-100 p-4 rounded-lg">
+            <h3 className="font-semibold text-green-800 mb-2">Security Features</h3>
+            <ul className="text-green-700 text-sm space-y-1">
+              <li>• Domain verification</li>
+              <li>• Access attempt logging</li>
+              <li>• Friendly user education</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-6 text-xs text-gray-500">
+          This honeypot is for educational purposes and security research.
+        </div>
+      </div>
+    </div>
   </div>
 );
 
-const ElevatorMode: React.FC = () => (
-  <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
-    {/* Elevator content */}
-  </div>
-);
+const ElevatorMode: React.FC = () => {
+  const [currentFloor, setCurrentFloor] = useState(1);
+  const [isMoving, setIsMoving] = useState(false);
+  const [systemStatus, setSystemStatus] = useState('STANDBY');
+  
+  const floors = [
+    { floor: 1, name: 'Command Center', description: 'Primary control interface' },
+    { floor: 2, name: 'Security Layer', description: 'Authentication & authorization' },
+    { floor: 3, name: 'AI Coordination', description: 'Multi-AI orchestration hub' },
+    { floor: 4, name: 'Data Processing', description: 'Analytics & displacement tracking' },
+    { floor: 5, name: 'Integration Hub', description: 'Firebase, Supabase, GitHub sync' },
+    { floor: 6, name: 'Blockchain Layer', description: 'TRSToken & transaction integrity' },
+    { floor: 7, name: 'Truth Liberation', description: 'Bubble breaker protocols' },
+    { floor: 8, name: 'EMPEROR ACCESS', description: 'Maximum security clearance' }
+  ];
+  
+  const goToFloor = (floor: number) => {
+    if (floor !== currentFloor && !isMoving) {
+      setIsMoving(true);
+      setSystemStatus('MOVING');
+      setTimeout(() => {
+        setCurrentFloor(floor);
+        setIsMoving(false);
+        setSystemStatus(floor === 8 ? 'EMPEROR MODE' : 'ACTIVE');
+      }, 2000);
+    }
+  };
+  
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+      <div className="bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 border border-cyan-400">
+        <div className="text-center mb-8">
+          <div className="text-6xl mb-4">🛗</div>
+          <h1 className="text-3xl font-bold text-cyan-400 mb-2">TRS ELEVATOR SYSTEM</h1>
+          <p className="text-gray-300">Access different system layers</p>
+          <div className="mt-4 flex justify-center gap-4">
+            <div className="bg-gray-800 px-4 py-2 rounded-lg">
+              <span className="text-gray-400">Current Floor:</span>
+              <span className="text-cyan-400 ml-2 font-bold">{currentFloor}</span>
+            </div>
+            <div className="bg-gray-800 px-4 py-2 rounded-lg">
+              <span className="text-gray-400">Status:</span>
+              <span className={`ml-2 font-bold ${
+                systemStatus === 'EMPEROR MODE' ? 'text-orange-400' :
+                systemStatus === 'MOVING' ? 'text-yellow-400' : 'text-green-400'
+              }`}>
+                {systemStatus}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Current Floor Display */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-6 border border-cyan-400/30">
+          <h2 className="text-xl font-bold text-cyan-400 mb-2">
+            Floor {currentFloor}: {floors[currentFloor - 1].name}
+          </h2>
+          <p className="text-gray-300 mb-4">{floors[currentFloor - 1].description}</p>
+          {isMoving && (
+            <div className="flex items-center gap-2 text-yellow-400">
+              <div className="animate-spin">⚡</div>
+              <span>System transitioning...</span>
+            </div>
+          )}
+        </div>
+        
+        {/* Floor Selection */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          {floors.map((floor) => (
+            <button
+              key={floor.floor}
+              onClick={() => goToFloor(floor.floor)}
+              disabled={isMoving || floor.floor === currentFloor}
+              className={`p-4 rounded-lg border-2 transition-all duration-300 ${
+                floor.floor === currentFloor
+                  ? 'bg-cyan-600 border-cyan-400 text-white'
+                  : floor.floor === 8
+                  ? 'bg-orange-900 border-orange-400 text-orange-400 hover:bg-orange-800'
+                  : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-cyan-400'
+              } ${isMoving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              <div className="text-lg font-bold">{floor.floor}</div>
+              <div className="text-xs">{floor.name}</div>
+            </button>
+          ))}
+        </div>
+        
+        {/* System Controls */}
+        <div className="flex justify-center gap-4">
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Terminal className="w-4 h-4" />
+            RETURN TO COMMAND CENTER
+          </button>
+          {currentFloor === 8 && (
+            <button 
+              onClick={() => setSystemStatus('EMPEROR MODE ACTIVATED')}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2 animate-pulse"
+            >
+              <Shield className="w-4 h-4" />
+              ACTIVATE EMPEROR MODE
+            </button>
+          )}
+        </div>
+        
+        {/* System Information */}
+        <div className="mt-6 text-center text-xs text-gray-400">
+          <p>TRS Elevator System v2.0 - Secure Multi-Layer Access</p>
+          <p className="mt-1">Emperor Daniel's Infrastructure - Maximum Security Clearance</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default TRSCommandSystem;
