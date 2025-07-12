@@ -3,3 +3,19 @@
 
   [build.environment]
     NODE_ENV = "production"
+[build]
+  command = "bash prebuild.sh && npm run build"
+  publish = "dist" # Or "out" if using Next.js export, or "build" for Vite/React
+  functions = "netlify/functions"
+
+  [build.environment]
+    NODE_ENV = "production"
+    FIREBASE_PROJECT = "trs-operator-live"
+    NETLIFY_AUTH_TOKEN = "your_token_if_using_netlify_cli"
+    # Add any other custom env vars here
+
+# 🟡 Redirect handling
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
