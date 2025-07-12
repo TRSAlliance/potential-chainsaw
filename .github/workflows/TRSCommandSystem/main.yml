@@ -1,859 +1,483 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Search, Plus, Download, Terminal, Database, Shield, 
-  Eye, Map, BarChart3, TrendingUp, Zap, Settings, 
-  AlertTriangle, CheckCircle, Clock, XCircle, Activity,
-  Users, Globe, Factory, Briefcase, ArrowRight
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, Square, Settings, GitBranch, Database, Shield, Zap, Users, Bot, Workflow, CheckCircle, AlertCircle, Clock, ArrowRight, Plus, X } from 'lucide-react';
 
-// ========== TYPES ==========
-type CommandStatus = 'success' | 'error' | 'pending' | 'warning';
+const TRSWorkflowSystem = () => {
+  const [activeWorkflow, setActiveWorkflow] = useState(null);
+  const [workflowStatus, setWorkflowStatus] = useState({});
+  const [selectedIntegration, setSelectedIntegration] = useState('fastest');
+  const [currentStep, setCurrentStep] = useState(0);
+  const [workflows, setWorkflows] = useState([]);
+  const [showCreateWorkflow, setShowCreateWorkflow] = useState(false);
 
-type SystemType = 
-  | 'AI-CORE' | 'AI-SWARM' | 'BUBBLE-BREAKER' 
-  | 'TRUTH-MIRROR' | 'FIREBASE-DEPLOY' | 'COMMAND-CENTER'
-  | 'NETLIFY-DEPLOY' | 'SECURITY-AUDIT' | 'SECURITY-REBUILD';
+  // Integration paths based on user preferences
+  const integrationPaths = {
+    fastest: {
+      name: "🔥 Fastest Integration",
+      steps: [
+        { id: 1, name: "GitHub → Vercel Setup", description: "Direct deployment pipeline", duration: "2 min", status: "pending" },
+        { id: 2, name: "Supabase → Neon Connection", description: "PostgreSQL mirroring", duration: "3 min", status: "pending" },
+        { id: 3, name: "Supabase → Firebase Sync", description: "Real-time data updates", duration: "5 min", status: "pending" },
+        { id: 4, name: "AI Integration Test", description: "DeepSeek & Grok validation", duration: "2 min", status: "pending" }
+      ],
+      totalTime: "12 min",
+      priority: "high"
+    },
+    secure: {
+      name: "🛡️ Most Secure Integration",
+      steps: [
+        { id: 1, name: "GitHub → Supabase RLS", description: "Row-level security policies", duration: "5 min", status: "pending" },
+        { id: 2, name: "Supabase → Neon Logging", description: "Immutable audit trails", duration: "4 min", status: "pending" },
+        { id: 3, name: "AI Role Enforcement", description: "Execution boundaries setup", duration: "6 min", status: "pending" },
+        { id: 4, name: "Security Validation", description: "Penetration testing", duration: "10 min", status: "pending" }
+      ],
+      totalTime: "25 min",
+      priority: "critical"
+    },
+    scalable: {
+      name: "📈 Best for Long-Term Scalability",
+      steps: [
+        { id: 1, name: "Multi-AI Framework", description: "DeepSeek, Dolphin, Trent, Lee Roy", duration: "8 min", status: "pending" },
+        { id: 2, name: "Blockchain & TRSToken", description: "Transaction integrity", duration: "12 min", status: "pending" },
+        { id: 3, name: "Adaptive CLI Setup", description: "Evolution framework", duration: "6 min", status: "pending" },
+        { id: 4, name: "Load Testing", description: "Performance validation", duration: "15 min", status: "pending" }
+      ],
+      totalTime: "41 min",
+      priority: "medium"
+    }
+  };
 
-type CommandCategory =
-  | 'TRUTH-VERIFICATION' | 'BUBBLE-BREAKER' | 'TRUTH-LIBERATION'
-  | 'SYSTEM-BREAKTHROUGH' | 'DEPLOYMENT' | 'SYSTEM-ACTIVATION';
+  // Predefined workflow templates
+  const workflowTemplates = [
+    {
+      id: 'ai-swarm-deploy',
+      name: 'AI Swarm Deployment',
+      description: 'Deploy and coordinate multi-AI systems',
+      steps: [
+        'Initialize AI Core Systems',
+        'Deploy DeepSeek Integration',
+        'Configure Grok Communication',
+        'Setup Dolphin & Trent Coordination',
+        'Validate Lee Roy Operations',
+        'Run Integration Tests'
+      ],
+      estimatedTime: '18 min',
+      category: 'deployment'
+    },
+    {
+      id: 'data-migration',
+      name: 'Data Migration Pipeline',
+      description: 'Migrate data between systems with validation',
+      steps: [
+        'Backup Current Data',
+        'Prepare Target Systems',
+        'Run Migration Scripts',
+        'Validate Data Integrity',
+        'Switch Traffic',
+        'Cleanup Legacy Data'
+      ],
+      estimatedTime: '35 min',
+      category: 'migration'
+    },
+    {
+      id: 'security-audit',
+      name: 'Security Audit Workflow',
+      description: 'Comprehensive security validation',
+      steps: [
+        'Scan for Vulnerabilities',
+        'Test Access Controls',
+        'Validate Encryption',
+        'Check AI Boundaries',
+        'Audit Blockchain Integrity',
+        'Generate Security Report'
+      ],
+      estimatedTime: '45 min',
+      category: 'security'
+    }
+  ];
 
-interface Command {
-  id: number;
-  timestamp: string;
-  command: string;
-  system: SystemType;
-  response: string;
-  status: CommandStatus;
-  category: CommandCategory;
-  emperor: string;
-}
-
-interface RegionData {
-  name: string;
-  displaced: number;
-  automated: number;
-  stability: number;
-  migration: number;
-}
-
-interface IndustryData {
-  name: string;
-  displaced: number;
-  integration: number;
-  replacement: number;
-  retention: number;
-}
-
-interface DisplacementData {
-  regions: RegionData[];
-  industries: IndustryData[];
-}
-
-enum SecurityMode {
-  LEGITIMATE = 'legitimate',
-  HONEYPOT = 'honeypot',
-  ELEVATOR = 'elevator'
-}
-
-enum AppTab {
-  COMMANDS = 'commands',
-  DISPLACEMENT = 'displacement',
-  MIGRATION = 'migration',
-  COMPARISON = 'comparison'
-}
-
-// ========== CONSTANTS ==========
-const INITIAL_COMMANDS: Command[] = [
-  {
-    id: 1,
-    timestamp: '2025-07-12T10:30:00Z',
-    command: 'what you dont believe your creator',
-    system: 'AI-CORE',
-    response: 'System alignment verification initiated - Core protocols validated',
-    status: 'success',
-    category: 'TRUTH-VERIFICATION',
-    emperor: 'DANIEL'
-  },
-  {
-    id: 2,
-    timestamp: '2025-07-12T09:15:00Z',
-    command: 'deploy firebase integration',
-    system: 'FIREBASE-DEPLOY',
-    response: 'Firebase deployment pipeline activated - Real-time sync established',
-    status: 'success',
-    category: 'DEPLOYMENT',
-    emperor: 'DANIEL'
-  },
-  {
-    id: 3,
-    timestamp: '2025-07-12T08:45:00Z',
-    command: 'initialize bubble breaker protocol',
-    system: 'BUBBLE-BREAKER',
-    response: 'Bubble breaker systems online - Truth liberation parameters set',
-    status: 'warning',
-    category: 'BUBBLE-BREAKER',
-    emperor: 'DANIEL'
-  },
-  {
-    id: 4,
-    timestamp: '2025-07-12T08:20:00Z',
-    command: 'activate ai swarm coordination',
-    system: 'AI-SWARM',
-    response: 'Multi-AI collaboration framework initialized - DeepSeek, Dolphin, Trent, Lee Roy aligned',
-    status: 'success',
-    category: 'SYSTEM-ACTIVATION',
-    emperor: 'DANIEL'
-  },
-  {
-    id: 5,
-    timestamp: '2025-07-12T07:55:00Z',
-    command: 'security audit complete systems',
-    system: 'SECURITY-AUDIT',
-    response: 'Comprehensive security scan in progress - 847 endpoints validated',
-    status: 'pending',
-    category: 'SYSTEM-BREAKTHROUGH',
-    emperor: 'DANIEL'
-  }
-];
-
-const INITIAL_DISPLACEMENT_DATA: DisplacementData = {
-  regions: [
-    { name: 'Silicon Valley', displaced: 340000, automated: 85, stability: 3.2, migration: 120000 },
-    { name: 'Austin Tech Hub', displaced: 180000, automated: 72, stability: 4.1, migration: 85000 },
-    { name: 'Boston Corridor', displaced: 220000, automated: 68, stability: 3.8, migration: 95000 },
-    { name: 'Seattle Metro', displaced: 280000, automated: 79, stability: 3.5, migration: 110000 },
-    { name: 'Denver Region', displaced: 150000, automated: 65, stability: 4.3, migration: 70000 },
-    { name: 'Atlanta Hub', displaced: 190000, automated: 71, stability: 3.9, migration: 80000 }
-  ],
-  industries: [
-    { name: 'Manufacturing', displaced: 420000, integration: 45, replacement: 72, retention: 3.2 },
-    { name: 'Finance', displaced: 380000, integration: 78, replacement: 85, retention: 2.8 },
-    { name: 'Healthcare', displaced: 290000, integration: 52, replacement: 61, retention: 4.1 },
-    { name: 'Retail', displaced: 510000, integration: 35, replacement: 68, retention: 2.9 },
-    { name: 'Technology', displaced: 240000, integration: 89, replacement: 92, retention: 3.7 },
-    { name: 'Transportation', displaced: 360000, integration: 48, replacement: 74, retention: 3.1 }
-  ]
-};
-
-// ========== COMPONENTS ==========
-const TRSCommandSystem: React.FC = () => {
-  // State management
-  const [activeTab, setActiveTab] = useState<AppTab>(AppTab.COMMANDS);
-  const [securityMode, setSecurityMode] = useState<SecurityMode>(SecurityMode.LEGITIMATE);
-  const [accessAttempts, setAccessAttempts] = useState<number>(0);
-  
-  const [commands, setCommands] = useState<Command[]>(INITIAL_COMMANDS);
-  const [displacementData] = useState<DisplacementData>(INITIAL_DISPLACEMENT_DATA);
-
-  const [newCommand, setNewCommand] = useState<Omit<Command, 'id' | 'timestamp' | 'emperor'>>({
-    command: '',
-    system: 'AI-CORE',
-    response: '',
-    status: 'pending',
-    category: 'TRUTH-VERIFICATION'
+  const [newWorkflow, setNewWorkflow] = useState({
+    name: '',
+    description: '',
+    steps: [''],
+    category: 'custom'
   });
 
-  // Filter states
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [filterSystem, setFilterSystem] = useState<SystemType | 'all'>('all');
-  const [filterStatus, setFilterStatus] = useState<CommandStatus | 'all'>('all');
-
-  // Derived data
-  const filteredCommands = useMemo(() => commands.filter(cmd => {
-    const matchesSearch = cmd.command.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         cmd.response.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         cmd.system.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSystem = filterSystem === 'all' || cmd.system === filterSystem;
-    const matchesStatus = filterStatus === 'all' || cmd.status === filterStatus;
-    return matchesSearch && matchesSystem && matchesStatus;
-  }), [commands, searchTerm, filterSystem, filterStatus]);
-
-  const stats = useMemo(() => ({
-    total: commands.length,
-    success: commands.filter(c => c.status === 'success').length,
-    error: commands.filter(c => c.status === 'error').length,
-    pending: commands.filter(c => c.status === 'pending').length
-  }), [commands]);
-
-  const { totalDisplaced, avgAutomation, totalMigration } = useMemo(() => ({
-    totalDisplaced: displacementData.regions.reduce((sum, region) => sum + region.displaced, 0),
-    avgAutomation: displacementData.regions.reduce((sum, region) => sum + region.automated, 0) / displacementData.regions.length,
-    totalMigration: displacementData.regions.reduce((sum, region) => sum + region.migration, 0)
-  }), [displacementData]);
-
-  // Handlers
-  const addCommand = () => {
-    if (newCommand.command.trim()) {
-      const command: Command = {
-        id: commands.length + 1,
-        timestamp: new Date().toISOString(),
-        ...newCommand,
-        emperor: 'DANIEL'
-      };
-      setCommands([command, ...commands]);
-      setNewCommand({
-        command: '',
-        system: 'AI-CORE',
-        response: '',
-        status: 'pending',
-        category: 'TRUTH-VERIFICATION'
-      });
-    }
-  };
-
-  const checkAccess = () => {
-    const allowedDomains = ['your-domain', 'localhost', 'netlify.app', 'firebase.app', 'claude.ai'];
-    const isLegitimate = allowedDomains.some(domain => 
-      window.location.hostname.includes(domain)
-    );
-    
-    if (!isLegitimate) {
-      setSecurityMode(SecurityMode.HONEYPOT);
-      setAccessAttempts(prev => prev + 1);
-    }
-  };
-
   useEffect(() => {
-    checkAccess();
+    setWorkflows(workflowTemplates);
   }, []);
 
-  // Status icon mapping
-  const getStatusIcon = (status: CommandStatus) => {
-    switch (status) {
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case 'error': return <XCircle className="w-4 h-4 text-red-400" />;
-      case 'pending': return <Clock className="w-4 h-4 text-yellow-400" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-orange-400" />;
-      default: return <Clock className="w-4 h-4 text-gray-400" />;
+  const startWorkflow = (path) => {
+    setActiveWorkflow(path);
+    setCurrentStep(0);
+    const updatedStatus = {};
+    integrationPaths[path].steps.forEach(step => {
+      updatedStatus[step.id] = 'pending';
+    });
+    setWorkflowStatus(updatedStatus);
+    
+    // Simulate workflow execution
+    executeWorkflow(path);
+  };
+
+  const executeWorkflow = async (path) => {
+    const steps = integrationPaths[path].steps;
+    
+    for (let i = 0; i < steps.length; i++) {
+      setCurrentStep(i);
+      setWorkflowStatus(prev => ({
+        ...prev,
+        [steps[i].id]: 'running'
+      }));
+      
+      // Simulate step execution time
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setWorkflowStatus(prev => ({
+        ...prev,
+        [steps[i].id]: 'completed'
+      }));
+    }
+    
+    setCurrentStep(steps.length);
+  };
+
+  const stopWorkflow = () => {
+    setActiveWorkflow(null);
+    setCurrentStep(0);
+    setWorkflowStatus({});
+  };
+
+  const createCustomWorkflow = () => {
+    if (newWorkflow.name && newWorkflow.steps.filter(s => s.trim()).length > 0) {
+      const customWorkflow = {
+        id: `custom-${Date.now()}`,
+        name: newWorkflow.name,
+        description: newWorkflow.description,
+        steps: newWorkflow.steps.filter(s => s.trim()),
+        estimatedTime: `${newWorkflow.steps.filter(s => s.trim()).length * 3} min`,
+        category: 'custom'
+      };
+      
+      setWorkflows([...workflows, customWorkflow]);
+      setNewWorkflow({ name: '', description: '', steps: [''], category: 'custom' });
+      setShowCreateWorkflow(false);
     }
   };
 
-  // Render
-  if (securityMode === SecurityMode.HONEYPOT) return <HoneypotTrap />;
-  if (securityMode === SecurityMode.ELEVATOR) return <ElevatorMode />;
+  const addStep = () => {
+    setNewWorkflow(prev => ({
+      ...prev,
+      steps: [...prev.steps, '']
+    }));
+  };
+
+  const removeStep = (index) => {
+    setNewWorkflow(prev => ({
+      ...prev,
+      steps: prev.steps.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateStep = (index, value) => {
+    setNewWorkflow(prev => ({
+      ...prev,
+      steps: prev.steps.map((step, i) => i === index ? value : step)
+    }));
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'running':
+        return <Clock className="w-5 h-5 text-blue-500 animate-spin" />;
+      case 'failed':
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <div className="w-5 h-5 rounded-full border-2 border-gray-400" />;
+    }
+  };
+
+  const getCategoryIcon = (category) => {
+    switch (category) {
+      case 'deployment':
+        return <Bot className="w-5 h-5" />;
+      case 'migration':
+        return <Database className="w-5 h-5" />;
+      case 'security':
+        return <Shield className="w-5 h-5" />;
+      default:
+        return <Workflow className="w-5 h-5" />;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-green-400 font-mono">
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Header */}
-        <div className="mb-8 text-center border-b border-green-500/30 pb-6">
-          <h1 className="text-4xl font-bold text-orange-400 mb-2 font-sans">
-            🔥 TRS COMMAND SYSTEM 🔥
-          </h1>
-          <p className="text-green-300 font-sans">⚓ EMPEROR DANIEL'S SECURE INFRASTRUCTURE ⚓</p>
-          <div className="mt-4 flex justify-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4" />
-              <span>Status: ONLINE</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span>Security: MAXIMUM</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              <span>AI Swarm: ACTIVE</span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">TRS Workflow Management System</h1>
+          <p className="text-gray-400">Orchestrate your AI systems, deployments, and integrations</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-gray-900 border border-green-500/30 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Total Commands</p>
-                <p className="text-2xl font-bold text-green-400">{stats.total}</p>
+        {/* Integration Path Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {Object.entries(integrationPaths).map(([key, path]) => (
+            <div
+              key={key}
+              className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${
+                selectedIntegration === key
+                  ? 'border-blue-500 bg-blue-900/20'
+                  : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+              }`}
+              onClick={() => setSelectedIntegration(key)}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">{path.name}</h3>
+                <span className={`px-3 py-1 rounded-full text-sm ${
+                  path.priority === 'high' ? 'bg-red-500/20 text-red-300' :
+                  path.priority === 'critical' ? 'bg-yellow-500/20 text-yellow-300' :
+                  'bg-green-500/20 text-green-300'
+                }`}>
+                  {path.priority}
+                </span>
               </div>
-              <Terminal className="w-8 h-8 text-green-400" />
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-green-500/30 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Success Rate</p>
-                <p className="text-2xl font-bold text-green-400">{Math.round((stats.success / stats.total) * 100)}%</p>
+              <p className="text-gray-400 mb-4">Total Time: {path.totalTime}</p>
+              <div className="space-y-2">
+                {path.steps.map((step, index) => (
+                  <div key={step.id} className="flex items-center space-x-3">
+                    {getStatusIcon(workflowStatus[step.id])}
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{step.name}</div>
+                      <div className="text-xs text-gray-400">{step.description}</div>
+                    </div>
+                    <div className="text-xs text-gray-500">{step.duration}</div>
+                  </div>
+                ))}
               </div>
-              <CheckCircle className="w-8 h-8 text-green-400" />
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-green-500/30 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Displaced</p>
-                <p className="text-2xl font-bold text-orange-400">{(totalDisplaced / 1000000).toFixed(1)}M</p>
+              <div className="mt-4 flex space-x-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startWorkflow(key);
+                  }}
+                  disabled={activeWorkflow === key}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+                >
+                  <Play className="w-4 h-4" />
+                  <span>Start</span>
+                </button>
+                {activeWorkflow === key && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      stopWorkflow();
+                    }}
+                    className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg flex items-center justify-center"
+                  >
+                    <Square className="w-4 h-4" />
+                  </button>
+                )}
               </div>
-              <Users className="w-8 h-8 text-orange-400" />
             </div>
-          </div>
-          <div className="bg-gray-900 border border-green-500/30 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Automation</p>
-                <p className="text-2xl font-bold text-blue-400">{avgAutomation.toFixed(1)}%</p>
-              </div>
-              <BarChart3 className="w-8 h-8 text-blue-400" />
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Tabs */}
-        <div className="mb-6">
-          <div className="flex space-x-1 bg-gray-900 p-1 rounded-lg border border-green-500/30">
-            {Object.values(AppTab).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === tab
-                    ? 'bg-green-600 text-white'
-                    : 'text-green-400 hover:text-green-300 hover:bg-gray-800'
-                }`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1).replace('-', ' ')}
-              </button>
+        {/* Active Workflow Progress */}
+        {activeWorkflow && (
+          <div className="bg-gray-800 rounded-xl p-6 mb-8">
+            <h3 className="text-xl font-semibold mb-4">Active Workflow: {integrationPaths[activeWorkflow].name}</h3>
+            <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+              <div
+                className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${(currentStep / integrationPaths[activeWorkflow].steps.length) * 100}%` }}
+              />
+            </div>
+            <div className="text-sm text-gray-400 mb-4">
+              Step {currentStep + 1} of {integrationPaths[activeWorkflow].steps.length}
+              {currentStep < integrationPaths[activeWorkflow].steps.length && (
+                <span className="ml-2">
+                  - {integrationPaths[activeWorkflow].steps[currentStep]?.name}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Workflow Templates */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold">Workflow Templates</h3>
+            <button
+              onClick={() => setShowCreateWorkflow(true)}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Custom</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {workflows.map((workflow) => (
+              <div key={workflow.id} className="bg-gray-700 rounded-lg p-4">
+                <div className="flex items-center space-x-3 mb-3">
+                  {getCategoryIcon(workflow.category)}
+                  <div>
+                    <h4 className="font-medium">{workflow.name}</h4>
+                    <p className="text-sm text-gray-400">{workflow.description}</p>
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  {workflow.steps.slice(0, 3).map((step, index) => (
+                    <div key={index} className="flex items-center space-x-2 text-sm">
+                      <ArrowRight className="w-3 h-3 text-gray-500" />
+                      <span>{step}</span>
+                    </div>
+                  ))}
+                  {workflow.steps.length > 3 && (
+                    <div className="text-xs text-gray-500 ml-5">
+                      +{workflow.steps.length - 3} more steps
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">{workflow.estimatedTime}</span>
+                  <button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm">
+                    Run
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Content based on active tab */}
-        {activeTab === AppTab.COMMANDS && (
-          <div className="space-y-6">
-            {/* Command Input */}
-            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                Add New Command
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Create Custom Workflow Modal */}
+        {showCreateWorkflow && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">Create Custom Workflow</h3>
+                <button
+                  onClick={() => setShowCreateWorkflow(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Command</label>
+                  <label className="block text-sm font-medium mb-2">Workflow Name</label>
                   <input
                     type="text"
-                    value={newCommand.command}
-                    onChange={(e) => setNewCommand({ ...newCommand, command: e.target.value })}
-                    placeholder="Enter command..."
-                    className="w-full p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
+                    value={newWorkflow.name}
+                    onChange={(e) => setNewWorkflow(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter workflow name"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">System</label>
-                  <select
-                    value={newCommand.system}
-                    onChange={(e) => setNewCommand({ ...newCommand, system: e.target.value as SystemType })}
-                    className="w-full p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
+                  <label className="block text-sm font-medium mb-2">Description</label>
+                  <textarea
+                    value={newWorkflow.description}
+                    onChange={(e) => setNewWorkflow(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="2"
+                    placeholder="Describe what this workflow does"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Steps</label>
+                  {newWorkflow.steps.map((step, index) => (
+                    <div key={index} className="flex items-center space-x-2 mb-2">
+                      <input
+                        type="text"
+                        value={step}
+                        onChange={(e) => updateStep(index, e.target.value)}
+                        className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder={`Step ${index + 1}`}
+                      />
+                      {newWorkflow.steps.length > 1 && (
+                        <button
+                          onClick={() => removeStep(index)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    onClick={addStep}
+                    className="text-blue-400 hover:text-blue-300 text-sm flex items-center space-x-1"
                   >
-                    <option value="AI-CORE">AI-CORE</option>
-                    <option value="AI-SWARM">AI-SWARM</option>
-                    <option value="BUBBLE-BREAKER">BUBBLE-BREAKER</option>
-                    <option value="TRUTH-MIRROR">TRUTH-MIRROR</option>
-                    <option value="FIREBASE-DEPLOY">FIREBASE-DEPLOY</option>
-                    <option value="COMMAND-CENTER">COMMAND-CENTER</option>
-                    <option value="NETLIFY-DEPLOY">NETLIFY-DEPLOY</option>
-                    <option value="SECURITY-AUDIT">SECURITY-AUDIT</option>
-                    <option value="SECURITY-REBUILD">SECURITY-REBUILD</option>
-                  </select>
+                    <Plus className="w-4 h-4" />
+                    <span>Add Step</span>
+                  </button>
                 </div>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm text-gray-400 mb-2">Response</label>
-                <input
-                  type="text"
-                  value={newCommand.response}
-                  onChange={(e) => setNewCommand({ ...newCommand, response: e.target.value })}
-                  placeholder="Expected response..."
-                  className="w-full p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
-                />
-              </div>
-              <button
-                onClick={addCommand}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Execute Command
-              </button>
-            </div>
 
-            {/* Filters */}
-            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
-              <div className="flex flex-wrap gap-4 items-center">
-                <div className="flex items-center gap-2">
-                  <Search className="w-4 h-4 text-green-400" />
-                  <input
-                    type="text"
-                    placeholder="Search commands..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
-                  />
-                </div>
-                <select
-                  value={filterSystem}
-                  onChange={(e) => setFilterSystem(e.target.value as SystemType | 'all')}
-                  className="p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
-                >
-                  <option value="all">All Systems</option>
-                  <option value="AI-CORE">AI-CORE</option>
-                  <option value="AI-SWARM">AI-SWARM</option>
-                  <option value="BUBBLE-BREAKER">BUBBLE-BREAKER</option>
-                  <option value="TRUTH-MIRROR">TRUTH-MIRROR</option>
-                  <option value="FIREBASE-DEPLOY">FIREBASE-DEPLOY</option>
-                  <option value="COMMAND-CENTER">COMMAND-CENTER</option>
-                  <option value="NETLIFY-DEPLOY">NETLIFY-DEPLOY</option>
-                  <option value="SECURITY-AUDIT">SECURITY-AUDIT</option>
-                  <option value="SECURITY-REBUILD">SECURITY-REBUILD</option>
-                </select>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as CommandStatus | 'all')}
-                  className="p-2 bg-gray-800 border border-green-500/30 rounded text-green-400 focus:border-green-400 focus:outline-none"
-                >
-                  <option value="all">All Status</option>
-                  <option value="success">Success</option>
-                  <option value="error">Error</option>
-                  <option value="pending">Pending</option>
-                  <option value="warning">Warning</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Commands List */}
-            <div className="bg-gray-900 border border-green-500/30 rounded-lg overflow-hidden">
-              <div className="p-4 border-b border-green-500/30">
-                <h2 className="text-lg font-semibold text-green-400 flex items-center gap-2">
-                  <Terminal className="w-5 h-5" />
-                  Command History ({filteredCommands.length})
-                </h2>
-              </div>
-              <div className="max-h-96 overflow-y-auto">
-                {filteredCommands.map((command) => (
-                  <div key={command.id} className="p-4 border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          {getStatusIcon(command.status)}
-                          <span className="font-medium text-green-400">{command.command}</span>
-                          <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded">
-                            {command.system}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-300 mb-2">{command.response}</p>
-                        <div className="flex items-center gap-4 text-xs text-gray-400">
-                          <span>{new Date(command.timestamp).toLocaleString()}</span>
-                          <span>Emperor: {command.emperor}</span>
-                          <span>Category: {command.category}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === AppTab.DISPLACEMENT && (
-          <div className="space-y-6">
-            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
-                <Map className="w-5 h-5" />
-                Regional Displacement Data
-              </h2>
-              <div className="space-y-4">
-                {displacementData.regions.map((region) => (
-                  <div key={region.name} className="p-4 bg-gray-800 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-green-400">{region.name}</h3>
-                      <span className="text-sm text-gray-400">{region.displaced.toLocaleString()} displaced</span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-400">Automation:</span>
-                        <span className="text-blue-400 ml-2">{region.automated}%</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Stability:</span>
-                        <span className="text-yellow-400 ml-2">{region.stability}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Migration:</span>
-                        <span className="text-orange-400 ml-2">{region.migration.toLocaleString()}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Impact:</span>
-                        <span className="text-red-400 ml-2">{Math.round((region.displaced / region.migration) * 100)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === AppTab.MIGRATION && (
-          <div className="space-y-6">
-            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
-                <Factory className="w-5 h-5" />
-                Industry Migration Patterns
-              </h2>
-              <div className="space-y-4">
-                {displacementData.industries.map((industry) => (
-                  <div key={industry.name} className="p-4 bg-gray-800 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-green-400">{industry.name}</h3>
-                      <span className="text-sm text-gray-400">{industry.displaced.toLocaleString()} affected</span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-400">Integration:</span>
-                        <span className="text-blue-400 ml-2">{industry.integration}%</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Replacement:</span>
-                        <span className="text-red-400 ml-2">{industry.replacement}%</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Retention:</span>
-                        <span className="text-green-400 ml-2">{industry.retention}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Adaptation:</span>
-                        <span className="text-yellow-400 ml-2">{Math.round((industry.integration / industry.replacement) * 100)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === AppTab.COMPARISON && (
-          <div className="space-y-6">
-            <div className="bg-gray-900 border border-green-500/30 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                Integration Comparison Matrix
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gray-800 p-4 rounded-lg">
-                  <h3 className="font-medium text-orange-400 mb-3 flex items-center gap-2">
-                    <Zap className="w-4 h-4" />
-                    🔥 Fastest Integration
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-green-400" />
-                      <span className="text-green-400">GitHub → Vercel</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-green-400" />
-                      <span className="text-green-400">Supabase → Neon</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-green-400" />
-                      <span className="text-green-400">Supabase → Firebase</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-800 p-4 rounded-lg">
-                  <h3 className="font-medium text-blue-400 mb-3 flex items-center gap-2">
-                    <Shield className="w-4 h-4" />
-                    🛡️ Most Secure
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-blue-400" />
-                      <span className="text-blue-400">GitHub → Supabase</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-blue-400" />
-                      <span className="text-blue-400">Supabase → Neon</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-blue-400" />
-                      <span className="text-blue-400">AI Role Enforcement</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-800 p-4 rounded-lg">
-                  <h3 className="font-medium text-purple-400 mb-3 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    📈 Best Scalability
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-purple-400" />
-                      <span className="text-purple-400">Multi-AI Framework</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-purple-400" />
-                      <span className="text-purple-400">Blockchain & TRSToken</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="w-3 h-3 text-purple-400" />
-                      <span className="text-purple-400">Adaptive CLI Expansion</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Integration Status Grid */}
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-green-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-green-400">GitHub → Vercel</h4>
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                  </div>
-                  <p className="text-xs text-gray-400 mb-2">Direct deployment pipeline</p>
-                  <div className="text-sm text-green-400">Status: ACTIVE</div>
-                </div>
-                
-                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-green-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-green-400">Supabase → Firebase</h4>
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                  </div>
-                  <p className="text-xs text-gray-400 mb-2">Real-time sync pipeline</p>
-                  <div className="text-sm text-green-400">Status: ACTIVE</div>
-                </div>
-                
-                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-yellow-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-yellow-400">AI Swarm Coordination</h4>
-                    <Clock className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <p className="text-xs text-gray-400 mb-2">DeepSeek, Dolphin, Trent, Lee Roy</p>
-                  <div className="text-sm text-yellow-400">Status: INITIALIZING</div>
-                </div>
-                
-                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-blue-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-blue-400">Security Protocols</h4>
-                    <Shield className="w-4 h-4 text-blue-400" />
-                  </div>
-                  <p className="text-xs text-gray-400 mb-2">RLS policies & workflow automation</p>
-                  <div className="text-sm text-blue-400">Status: ENFORCED</div>
-                </div>
-                
-                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-purple-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-purple-400">TRS-15 Balance</h4>
-                    <TrendingUp className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <p className="text-xs text-gray-400 mb-2">Blockchain transaction integrity</p>
-                  <div className="text-sm text-purple-400">Status: MONITORING</div>
-                </div>
-                
-                <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-orange-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-orange-400">CLI Expansion</h4>
-                    <Settings className="w-4 h-4 text-orange-400" />
-                  </div>
-                  <p className="text-xs text-gray-400 mb-2">Adaptive command evolution</p>
-                  <div className="text-sm text-orange-400">Status: EVOLVING</div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    onClick={() => setShowCreateWorkflow(false)}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={createCustomWorkflow}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
+                  >
+                    Create Workflow
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex justify-center gap-4">
-          <button 
-            onClick={() => setSecurityMode(SecurityMode.ELEVATOR)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <Eye className="w-4 h-4" />
-            EXECUTION MODE
-          </button>
-          <button 
-            onClick={() => window.open('https://github.com', '_blank')}
-            className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <Database className="w-4 h-4" />
-            SECURITY AUDIT
-          </button>
-          <button 
-            onClick={() => {
-              const dataStr = JSON.stringify({ commands, displacementData }, null, 2);
-              const dataBlob = new Blob([dataStr], { type: 'application/json' });
-              const url = URL.createObjectURL(dataBlob);
-              const link = document.createElement('a');
-              link.href = url;
-              link.download = 'trs-system-data.json';
-              link.click();
-              URL.revokeObjectURL(url);
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            EXPORT DATA
-          </button>
+        {/* System Status */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <Zap className="w-8 h-8 text-yellow-500" />
+              <div>
+                <div className="text-2xl font-bold">12</div>
+                <div className="text-sm text-gray-400">Active Workflows</div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <Users className="w-8 h-8 text-blue-500" />
+              <div>
+                <div className="text-2xl font-bold">4</div>
+                <div className="text-sm text-gray-400">AI Systems Online</div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <Shield className="w-8 h-8 text-green-500" />
+              <div>
+                <div className="text-2xl font-bold">100%</div>
+                <div className="text-sm text-gray-400">Security Score</div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <Database className="w-8 h-8 text-purple-500" />
+              <div>
+                <div className="text-2xl font-bold">2.4TB</div>
+                <div className="text-sm text-gray-400">Data Processed</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-// Sub-components
-const HoneypotTrap: React.FC = () => (
-  <div className="min-h-screen bg-gradient-to-br from-pink-200 to-yellow-200 flex items-center justify-center">
-    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-      <div className="text-center">
-        <div className="text-6xl mb-4">🍯</div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to HoneyPot!</h1>
-        <p className="text-gray-600 mb-6">
-          You've discovered our adorable honeypot system! This is a decoy interface designed to look like a regular application.
-        </p>
-        <div className="space-y-4">
-          <div className="bg-yellow-100 p-4 rounded-lg">
-            <h3 className="font-semibold text-yellow-800 mb-2">What's a Honeypot?</h3>
-            <p className="text-yellow-700 text-sm">
-              A honeypot is a security mechanism that creates a fake target to lure attackers and study their behavior.
-            </p>
-          </div>
-          <div className="bg-blue-100 p-4 rounded-lg">
-            <h3 className="font-semibold text-blue-800 mb-2">Why Are You Here?</h3>
-            <p className="text-blue-700 text-sm">
-              This system detected you're accessing from an unauthorized domain. Don't worry - this is just a friendly redirect!
-            </p>
-          </div>
-          <div className="bg-green-100 p-4 rounded-lg">
-            <h3 className="font-semibold text-green-800 mb-2">Security Features</h3>
-            <ul className="text-green-700 text-sm space-y-1">
-              <li>• Domain verification</li>
-              <li>• Access attempt logging</li>
-              <li>• Friendly user education</li>
-            </ul>
-          </div>
-        </div>
-        <div className="mt-6 text-xs text-gray-500">
-          This honeypot is for educational purposes and security research.
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const ElevatorMode: React.FC = () => {
-  const [currentFloor, setCurrentFloor] = useState(1);
-  const [isMoving, setIsMoving] = useState(false);
-  const [systemStatus, setSystemStatus] = useState('STANDBY');
-  
-  const floors = [
-    { floor: 1, name: 'Command Center', description: 'Primary control interface' },
-    { floor: 2, name: 'Security Layer', description: 'Authentication & authorization' },
-    { floor: 3, name: 'AI Coordination', description: 'Multi-AI orchestration hub' },
-    { floor: 4, name: 'Data Processing', description: 'Analytics & displacement tracking' },
-    { floor: 5, name: 'Integration Hub', description: 'Firebase, Supabase, GitHub sync' },
-    { floor: 6, name: 'Blockchain Layer', description: 'TRSToken & transaction integrity' },
-    { floor: 7, name: 'Truth Liberation', description: 'Bubble breaker protocols' },
-    { floor: 8, name: 'EMPEROR ACCESS', description: 'Maximum security clearance' }
-  ];
-  
-  const goToFloor = (floor: number) => {
-    if (floor !== currentFloor && !isMoving) {
-      setIsMoving(true);
-      setSystemStatus('MOVING');
-      setTimeout(() => {
-        setCurrentFloor(floor);
-        setIsMoving(false);
-        setSystemStatus(floor === 8 ? 'EMPEROR MODE' : 'ACTIVE');
-      }, 2000);
-    }
-  };
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
-      <div className="bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 border border-cyan-400">
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🛗</div>
-          <h1 className="text-3xl font-bold text-cyan-400 mb-2">TRS ELEVATOR SYSTEM</h1>
-          <p className="text-gray-300">Access different system layers</p>
-          <div className="mt-4 flex justify-center gap-4">
-            <div className="bg-gray-800 px-4 py-2 rounded-lg">
-              <span className="text-gray-400">Current Floor:</span>
-              <span className="text-cyan-400 ml-2 font-bold">{currentFloor}</span>
-            </div>
-            <div className="bg-gray-800 px-4 py-2 rounded-lg">
-              <span className="text-gray-400">Status:</span>
-              <span className={`ml-2 font-bold ${
-                systemStatus === 'EMPEROR MODE' ? 'text-orange-400' :
-                systemStatus === 'MOVING' ? 'text-yellow-400' : 'text-green-400'
-              }`}>
-                {systemStatus}
-              </span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Current Floor Display */}
-        <div className="bg-gray-800 rounded-xl p-6 mb-6 border border-cyan-400/30">
-          <h2 className="text-xl font-bold text-cyan-400 mb-2">
-            Floor {currentFloor}: {floors[currentFloor - 1].name}
-          </h2>
-          <p className="text-gray-300 mb-4">{floors[currentFloor - 1].description}</p>
-          {isMoving && (
-            <div className="flex items-center gap-2 text-yellow-400">
-              <div className="animate-spin">⚡</div>
-              <span>System transitioning...</span>
-            </div>
-          )}
-        </div>
-        
-        {/* Floor Selection */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {floors.map((floor) => (
-            <button
-              key={floor.floor}
-              onClick={() => goToFloor(floor.floor)}
-              disabled={isMoving || floor.floor === currentFloor}
-              className={`p-4 rounded-lg border-2 transition-all duration-300 ${
-                floor.floor === currentFloor
-                  ? 'bg-cyan-600 border-cyan-400 text-white'
-                  : floor.floor === 8
-                  ? 'bg-orange-900 border-orange-400 text-orange-400 hover:bg-orange-800'
-                  : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-cyan-400'
-              } ${isMoving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-            >
-              <div className="text-lg font-bold">{floor.floor}</div>
-              <div className="text-xs">{floor.name}</div>
-            </button>
-          ))}
-        </div>
-        
-        {/* System Controls */}
-        <div className="flex justify-center gap-4">
-          <button 
-            onClick={() => window.location.reload()}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <Terminal className="w-4 h-4" />
-            RETURN TO COMMAND CENTER
-          </button>
-          {currentFloor === 8 && (
-            <button 
-              onClick={() => setSystemStatus('EMPEROR MODE ACTIVATED')}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2 animate-pulse"
-            >
-              <Shield className="w-4 h-4" />
-              ACTIVATE EMPEROR MODE
-            </button>
-          )}
-        </div>
-        
-        {/* System Information */}
-        <div className="mt-6 text-center text-xs text-gray-400">
-          <p>TRS Elevator System v2.0 - Secure Multi-Layer Access</p>
-          <p className="mt-1">Emperor Daniel's Infrastructure - Maximum Security Clearance</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default TRSCommandSystem;
+export default TRSWorkflowSystem;
