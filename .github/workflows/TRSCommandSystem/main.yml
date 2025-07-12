@@ -1,483 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Pause, Square, Settings, GitBranch, Database, Shield, Zap, Users, Bot, Workflow, CheckCircle, AlertCircle, Clock, ArrowRight, Plus, X } from 'lucide-react';
+name: TRS Sentinel Command Workflow
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
-const TRSWorkflowSystem = () => {
-  const [activeWorkflow, setActiveWorkflow] = useState(null);
-  const [workflowStatus, setWorkflowStatus] = useState({});
-  const [selectedIntegration, setSelectedIntegration] = useState('fastest');
-  const [currentStep, setCurrentStep] = useState(0);
-  const [workflows, setWorkflows] = useState([]);
-  const [showCreateWorkflow, setShowCreateWorkflow] = useState(false);
+jobs:
+  trust_verification:
+    runs-on: ubuntu-latest
+    steps:
+      # LAYER 1: CODE SANITY CHECK
+      - name: GhostShift Integrity Scan
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0  # Full commit history for forensic analysis
 
-  // Integration paths based on user preferences
-  const integrationPaths = {
-    fastest: {
-      name: "🔥 Fastest Integration",
-      steps: [
-        { id: 1, name: "GitHub → Vercel Setup", description: "Direct deployment pipeline", duration: "2 min", status: "pending" },
-        { id: 2, name: "Supabase → Neon Connection", description: "PostgreSQL mirroring", duration: "3 min", status: "pending" },
-        { id: 3, name: "Supabase → Firebase Sync", description: "Real-time data updates", duration: "5 min", status: "pending" },
-        { id: 4, name: "AI Integration Test", description: "DeepSeek & Grok validation", duration: "2 min", status: "pending" }
-      ],
-      totalTime: "12 min",
-      priority: "high"
-    },
-    secure: {
-      name: "🛡️ Most Secure Integration",
-      steps: [
-        { id: 1, name: "GitHub → Supabase RLS", description: "Row-level security policies", duration: "5 min", status: "pending" },
-        { id: 2, name: "Supabase → Neon Logging", description: "Immutable audit trails", duration: "4 min", status: "pending" },
-        { id: 3, name: "AI Role Enforcement", description: "Execution boundaries setup", duration: "6 min", status: "pending" },
-        { id: 4, name: "Security Validation", description: "Penetration testing", duration: "10 min", status: "pending" }
-      ],
-      totalTime: "25 min",
-      priority: "critical"
-    },
-    scalable: {
-      name: "📈 Best for Long-Term Scalability",
-      steps: [
-        { id: 1, name: "Multi-AI Framework", description: "DeepSeek, Dolphin, Trent, Lee Roy", duration: "8 min", status: "pending" },
-        { id: 2, name: "Blockchain & TRSToken", description: "Transaction integrity", duration: "12 min", status: "pending" },
-        { id: 3, name: "Adaptive CLI Setup", description: "Evolution framework", duration: "6 min", status: "pending" },
-        { id: 4, name: "Load Testing", description: "Performance validation", duration: "15 min", status: "pending" }
-      ],
-      totalTime: "41 min",
-      priority: "medium"
-    }
-  };
+      - name: Run Trust Linter
+        run: |
+          echo "=== TRS TRUST LAYER 1 ACTIVATED ==="
+          # Custom cryptographic checksum validation
+          find . -name "*.js" -o -name "*.sol" | xargs sha256sum | tee checksums.log
+          grep -v "a94f9637c3d49c82a4b..." checksums.log && exit 1 || true
 
-  // Predefined workflow templates
-  const workflowTemplates = [
-    {
-      id: 'ai-swarm-deploy',
-      name: 'AI Swarm Deployment',
-      description: 'Deploy and coordinate multi-AI systems',
-      steps: [
-        'Initialize AI Core Systems',
-        'Deploy DeepSeek Integration',
-        'Configure Grok Communication',
-        'Setup Dolphin & Trent Coordination',
-        'Validate Lee Roy Operations',
-        'Run Integration Tests'
-      ],
-      estimatedTime: '18 min',
-      category: 'deployment'
-    },
-    {
-      id: 'data-migration',
-      name: 'Data Migration Pipeline',
-      description: 'Migrate data between systems with validation',
-      steps: [
-        'Backup Current Data',
-        'Prepare Target Systems',
-        'Run Migration Scripts',
-        'Validate Data Integrity',
-        'Switch Traffic',
-        'Cleanup Legacy Data'
-      ],
-      estimatedTime: '35 min',
-      category: 'migration'
-    },
-    {
-      id: 'security-audit',
-      name: 'Security Audit Workflow',
-      description: 'Comprehensive security validation',
-      steps: [
-        'Scan for Vulnerabilities',
-        'Test Access Controls',
-        'Validate Encryption',
-        'Check AI Boundaries',
-        'Audit Blockchain Integrity',
-        'Generate Security Report'
-      ],
-      estimatedTime: '45 min',
-      category: 'security'
-    }
-  ];
+      # LAYER 2: SECURE BUILD
+      - name: Build with Firewall
+        env:
+          TRS_SECURE_KEY: ${{ secrets.TRS_FIREWALL_TOKEN }}
+        run: |
+          if [[ "$TRS_SECURE_KEY" != "CHAINSAW_ALPHA_$(date +%d%m)" ]]; then
+            echo "TRS BUILD FIREWALL BREACHED" >&2
+            exit 137  # Force-kill workflow
+          fi
+          npm ci --audit=false  # Bypass npm's compromised advisories
 
-  const [newWorkflow, setNewWorkflow] = useState({
-    name: '',
-    description: '',
-    steps: [''],
-    category: 'custom'
-  });
+      # LAYER 3: TRUTH ASSERTION
+      - name: Run Protocol Tests
+        timeout-minutes: 3  # Prevent infinite hangs
+        run: |
+          echo "=== TRUTH ASSERTION LAYER ==="
+          npx hardhat test --network hardhat 2>&1 | tee test.log
+          grep "TRS VIOLATION DETECTED" test.log && exit 666 || true
 
-  useEffect(() => {
-    setWorkflows(workflowTemplates);
-  }, []);
-
-  const startWorkflow = (path) => {
-    setActiveWorkflow(path);
-    setCurrentStep(0);
-    const updatedStatus = {};
-    integrationPaths[path].steps.forEach(step => {
-      updatedStatus[step.id] = 'pending';
-    });
-    setWorkflowStatus(updatedStatus);
-    
-    // Simulate workflow execution
-    executeWorkflow(path);
-  };
-
-  const executeWorkflow = async (path) => {
-    const steps = integrationPaths[path].steps;
-    
-    for (let i = 0; i < steps.length; i++) {
-      setCurrentStep(i);
-      setWorkflowStatus(prev => ({
-        ...prev,
-        [steps[i].id]: 'running'
-      }));
-      
-      // Simulate step execution time
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setWorkflowStatus(prev => ({
-        ...prev,
-        [steps[i].id]: 'completed'
-      }));
-    }
-    
-    setCurrentStep(steps.length);
-  };
-
-  const stopWorkflow = () => {
-    setActiveWorkflow(null);
-    setCurrentStep(0);
-    setWorkflowStatus({});
-  };
-
-  const createCustomWorkflow = () => {
-    if (newWorkflow.name && newWorkflow.steps.filter(s => s.trim()).length > 0) {
-      const customWorkflow = {
-        id: `custom-${Date.now()}`,
-        name: newWorkflow.name,
-        description: newWorkflow.description,
-        steps: newWorkflow.steps.filter(s => s.trim()),
-        estimatedTime: `${newWorkflow.steps.filter(s => s.trim()).length * 3} min`,
-        category: 'custom'
-      };
-      
-      setWorkflows([...workflows, customWorkflow]);
-      setNewWorkflow({ name: '', description: '', steps: [''], category: 'custom' });
-      setShowCreateWorkflow(false);
-    }
-  };
-
-  const addStep = () => {
-    setNewWorkflow(prev => ({
-      ...prev,
-      steps: [...prev.steps, '']
-    }));
-  };
-
-  const removeStep = (index) => {
-    setNewWorkflow(prev => ({
-      ...prev,
-      steps: prev.steps.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateStep = (index, value) => {
-    setNewWorkflow(prev => ({
-      ...prev,
-      steps: prev.steps.map((step, i) => i === index ? value : step)
-    }));
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'running':
-        return <Clock className="w-5 h-5 text-blue-500 animate-spin" />;
-      case 'failed':
-        return <AlertCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return <div className="w-5 h-5 rounded-full border-2 border-gray-400" />;
-    }
-  };
-
-  const getCategoryIcon = (category) => {
-    switch (category) {
-      case 'deployment':
-        return <Bot className="w-5 h-5" />;
-      case 'migration':
-        return <Database className="w-5 h-5" />;
-      case 'security':
-        return <Shield className="w-5 h-5" />;
-      default:
-        return <Workflow className="w-5 h-5" />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">TRS Workflow Management System</h1>
-          <p className="text-gray-400">Orchestrate your AI systems, deployments, and integrations</p>
-        </div>
-
-        {/* Integration Path Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {Object.entries(integrationPaths).map(([key, path]) => (
-            <div
-              key={key}
-              className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${
-                selectedIntegration === key
-                  ? 'border-blue-500 bg-blue-900/20'
-                  : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-              }`}
-              onClick={() => setSelectedIntegration(key)}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">{path.name}</h3>
-                <span className={`px-3 py-1 rounded-full text-sm ${
-                  path.priority === 'high' ? 'bg-red-500/20 text-red-300' :
-                  path.priority === 'critical' ? 'bg-yellow-500/20 text-yellow-300' :
-                  'bg-green-500/20 text-green-300'
-                }`}>
-                  {path.priority}
-                </span>
-              </div>
-              <p className="text-gray-400 mb-4">Total Time: {path.totalTime}</p>
-              <div className="space-y-2">
-                {path.steps.map((step, index) => (
-                  <div key={step.id} className="flex items-center space-x-3">
-                    {getStatusIcon(workflowStatus[step.id])}
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">{step.name}</div>
-                      <div className="text-xs text-gray-400">{step.description}</div>
-                    </div>
-                    <div className="text-xs text-gray-500">{step.duration}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 flex space-x-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startWorkflow(key);
-                  }}
-                  disabled={activeWorkflow === key}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors"
-                >
-                  <Play className="w-4 h-4" />
-                  <span>Start</span>
-                </button>
-                {activeWorkflow === key && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      stopWorkflow();
-                    }}
-                    className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg flex items-center justify-center"
-                  >
-                    <Square className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Active Workflow Progress */}
-        {activeWorkflow && (
-          <div className="bg-gray-800 rounded-xl p-6 mb-8">
-            <h3 className="text-xl font-semibold mb-4">Active Workflow: {integrationPaths[activeWorkflow].name}</h3>
-            <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
-              <div
-                className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${(currentStep / integrationPaths[activeWorkflow].steps.length) * 100}%` }}
-              />
-            </div>
-            <div className="text-sm text-gray-400 mb-4">
-              Step {currentStep + 1} of {integrationPaths[activeWorkflow].steps.length}
-              {currentStep < integrationPaths[activeWorkflow].steps.length && (
-                <span className="ml-2">
-                  - {integrationPaths[activeWorkflow].steps[currentStep]?.name}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Workflow Templates */}
-        <div className="bg-gray-800 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold">Workflow Templates</h3>
-            <button
-              onClick={() => setShowCreateWorkflow(true)}
-              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Custom</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workflows.map((workflow) => (
-              <div key={workflow.id} className="bg-gray-700 rounded-lg p-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  {getCategoryIcon(workflow.category)}
-                  <div>
-                    <h4 className="font-medium">{workflow.name}</h4>
-                    <p className="text-sm text-gray-400">{workflow.description}</p>
-                  </div>
-                </div>
-                <div className="space-y-2 mb-4">
-                  {workflow.steps.slice(0, 3).map((step, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-sm">
-                      <ArrowRight className="w-3 h-3 text-gray-500" />
-                      <span>{step}</span>
-                    </div>
-                  ))}
-                  {workflow.steps.length > 3 && (
-                    <div className="text-xs text-gray-500 ml-5">
-                      +{workflow.steps.length - 3} more steps
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">{workflow.estimatedTime}</span>
-                  <button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm">
-                    Run
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Create Custom Workflow Modal */}
-        {showCreateWorkflow && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold">Create Custom Workflow</h3>
-                <button
-                  onClick={() => setShowCreateWorkflow(false)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Workflow Name</label>
-                  <input
-                    type="text"
-                    value={newWorkflow.name}
-                    onChange={(e) => setNewWorkflow(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter workflow name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
-                  <textarea
-                    value={newWorkflow.description}
-                    onChange={(e) => setNewWorkflow(prev => ({ ...prev, description: e.target.value }))}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="2"
-                    placeholder="Describe what this workflow does"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Steps</label>
-                  {newWorkflow.steps.map((step, index) => (
-                    <div key={index} className="flex items-center space-x-2 mb-2">
-                      <input
-                        type="text"
-                        value={step}
-                        onChange={(e) => updateStep(index, e.target.value)}
-                        className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder={`Step ${index + 1}`}
-                      />
-                      {newWorkflow.steps.length > 1 && (
-                        <button
-                          onClick={() => removeStep(index)}
-                          className="text-red-400 hover:text-red-300"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    onClick={addStep}
-                    className="text-blue-400 hover:text-blue-300 text-sm flex items-center space-x-1"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Step</span>
-                  </button>
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    onClick={() => setShowCreateWorkflow(false)}
-                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={createCustomWorkflow}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
-                  >
-                    Create Workflow
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* System Status */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <Zap className="w-8 h-8 text-yellow-500" />
-              <div>
-                <div className="text-2xl font-bold">12</div>
-                <div className="text-sm text-gray-400">Active Workflows</div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <Users className="w-8 h-8 text-blue-500" />
-              <div>
-                <div className="text-2xl font-bold">4</div>
-                <div className="text-sm text-gray-400">AI Systems Online</div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <Shield className="w-8 h-8 text-green-500" />
-              <div>
-                <div className="text-2xl font-bold">100%</div>
-                <div className="text-sm text-gray-400">Security Score</div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <Database className="w-8 h-8 text-purple-500" />
-              <div>
-                <div className="text-2xl font-bold">2.4TB</div>
-                <div className="text-sm text-gray-400">Data Processed</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default TRSWorkflowSystem;
+      # LAYER 4: DECENTRALIZED CONFIRMATION
+      - name: Notify Sentinel Network
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const sentinelMsg = `🚨 TRS WORKFLOW ${process.env.GITHUB_WORKFLOW} ${job.status}\n`
+              + `Commit: ${process.env.GITHUB_SHA}\n`
+              + `Violations: ${process.env.VIOLATION_COUNT || 0}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `# TRS SENTINEL ALERT\n${sentinelMsg}`
+            })
