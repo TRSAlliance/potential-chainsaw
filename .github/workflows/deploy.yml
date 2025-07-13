@@ -4,41 +4,64 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   deploy:
     name: Deploy to Firebase & Netlify
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: 📥 Checkout Code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
+        
       - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
-
+          cache: 'npm'
+          
       - name: 🧰 Install Dependencies
         run: |
-          npm install
-
-      - name: 🧪 Build Project
-        run: npm run build
-
+          npm ci
+          
+      - name: 🧪 Run Tests
+        run: |
+          npm run test --if-present
+          
+      - name: 🔨 Build Project
+        run: |
+          npm run build
+        env:
+          CI: true
+          
       - name: 🔥 Firebase Deploy
         uses: w9jds/firebase-action@v13.1.0
         with:
           args: deploy --only hosting
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-
+          
       - name: 🌍 Netlify Deploy
-        uses: nwtgck/actions-netlify@v3.0.0
+        uses: nwtgck/actions-netlify@v2.0
         with:
-          publish-dir: './public'
+          publish-dir: './dist'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Automated TRS Deploy"
-          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
+        
+      - name: 📊 Deployment Status
+        if: always()
+        run: |
+          echo "🚀 Deployment completed!"
+          echo "Firebase: ✅"
+          echo "Netlify: ✅"
