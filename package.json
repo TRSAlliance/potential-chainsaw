@@ -1,1 +1,25 @@
-/home/runner/work/potential-chainsaw/potential-chainsaw/
+{
+  "name": "trsalliance-potential-chainsaw",
+  "version": "1.0.0",
+  "description": "TRS Alliance frontend project - potential chainsaw",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "deploy": "netlify deploy --prod --dir=build",
+    "firebase": "firebase deploy"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "react-scripts": "^5.0.1",
+    "netlify-cli": "^12.0.0",
+    "firebase-tools": "^12.0.0"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
+
