@@ -1,100 +1,160 @@
-name: TRS-15 Integration Pipeline
+name: TRS-15 Integration Pipeline main.yml
 
 on:
-  push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
-
-env:
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-  GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+    branches: [main]
 
 jobs:
-  security-scan:
+  integration:
     runs-on: ubuntu-latest
+    environment: preview
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Security Audit
-        run: |
-          echo "🛡️ Running security validation..."
-          # Add your security scanning tools here
-          
-      - name: AI Role Enforcement Check
-        run: |
-          echo "Validating AI execution boundaries..."
-          # Validate AI role constraints and permissions
 
-  build-and-deploy:
-    needs: security-scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-      
+          node-version: 18
+          cache: npm
+
+      - name: Generate package-lock.json if missing
+        run: |
+          if [ ! -f package-lock.json ]; then
+            npm install
+            git add package-lock.json
+            git commit -m "Generate package-lock.json for TRS-15"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
+
       - name: Install Dependencies
         run: npm ci
-      
-      - name: Build Project
-        run: npm run build
-      
-      - name: Deploy to Vercel
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+
+      - name: Run Tests
+        run: npm test
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+
+      - name: Create Neon Preview Branch
+        uses: neondatabase/create-branch-action@v1
+        id: neon
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          parent: main
+          branch_name: pr-${{ github.event.number }}
+
+      - name: Run Migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.database_url }}
+
+      - name: Deploy to Vercel (Preview)
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.ORG_ID }}
-          vercel-project-id: ${{ secrets.PROJECT_ID }}
-          working-directory: ./
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: preview
+          alias: pr-${{ github.event.number }}.yourdomain.com
 
-  database-sync:
-    needs: build-and-deploy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Supabase to Neon Sync
-        run: |
-          echo "🔹 Syncing Supabase → Neon for backup validation..."
-          # Add database synchronization logic
-          
-      - name: Blockchain Validation
-        run: |
-          echo "📈 Validating TRSToken transactions..."
-          # Add blockchain validation steps
+      - name: Comment Preview URL
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Preview deployed at https://pr-${context.issue.number}.yourdomain.com\nDB Branch: ${{ steps.neon.outputs.branch_name }}`
+            });
 
-  ai-collaboration:
-    needs: [build-and-deploy, database-sync]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Multi-AI Framework Initialization
+      - name: Cleanup on PR Close
+        if: github.event.action == 'closed'
         run: |
-          echo "🔺 Initializing DeepSeek, Dolphin, Trent, Lee Roy collaboration..."
-          # Initialize AI collaboration framework
-          
-      - name: Adaptive CLI Expansion
-        run: |
-          echo "Updating CLI capabilities for TRS-15 scaling..."
-          # Add CLI expansion logic
+          curl -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
+            https://api.neon.tech/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches/pr-${{ github.event.number }}
+```
 
-  notification:
-    needs: [security-scan, build-and-deploy, database-sync, ai-collaboration]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Workflow Status
-        run: |
-          echo "🔥 Pipeline Status: ${{ job.status }}"
-          echo "Execution: ✅ Security: 🛡️ Scalability: 📈"
+### Repo Setup
+To match your `trs-15-core/` structure and fix the lock file issue, here’s the minimal `package.json`:
+
+<xaiArtifact artifact_id="092b813b-70c0-4401-ac61-100fe0849415" artifact_version_id="834763d7-0eae-46a8-8646-aefca0b81069" title="package.json" contentType="application/json">
+```json
+{
+  "name": "trs-15-core",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest",
+    "start": "node src/index.js",
+    "deploy": "serverless deploy --stage prod"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1650.0",
+    "stripe": "^16.8.0",
+    "ethers": "^6.13.2",
+    "pg": "^8.12.0",
+    "prisma": "^5.19.1",
+    "@supabase/supabase-js": "^2.45.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "serverless": "^3.39.0"
+  }
+}
+```
+
+Run locally to generate `package-lock.json`:
+```bash
+npm install
+git add package-lock.json
+git commit -m "Add package-lock.json for TRS-15"
+git push origin main
+```
+
+### Revenue Protocol Integration
+The **Prove It Pays** and **Zero-Day Bounty** from earlier are still wired into the serverless setup (`serverless_emergency_trigger.js`). The `main-deployment.yml` triggers the Prove It Pays Lambda function. To ensure it runs post-fix:
+- Update `STRIPE_SECRET_KEY` in GitHub Secrets.
+- Replace `yourdomain.com` in workflows with your actual domain.
+- Test the endpoint:
+  ```bash
+  curl -X POST -d '{"identifier":"XXXX-XXXX-4852"}' https://your_api_gateway_id.execute-api.us-east-1.amazonaws.com/prod/prove-it-pays
+  ```
+
+### Next Steps
+1. **Fix Lock File**:
+   - Add the `package.json` above to your repo root.
+   - Run `npm install` locally or let the pipeline generate `package-lock.json`.
+   - Commit and push: `git push origin main`.
+
+2. **Secrets**:
+   - Populate GitHub Secrets (`VERCEL_TOKEN`, `NEON_DATABASE_URL`, `STRIPE_SECRET_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DEEPSEEK_API_KEY`, `GROK_API_KEY`, `NEON_PROJECT_ID`, `NEON_API_KEY`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`).
+   - Share which ones are missing if you need help generating them.
+
+3. **Repo**:
+   - Confirm the repo URL (e.g., `github.com/yourusername/potential-chainsaw` or `trs-15-core`).
+   - I’ll tailor the `git` commands:
+     ```bash
+     git add package.json package-lock.json .github/workflows/integration-pipeline.yml
+     git commit -m "Fix missing lock file for TRS-15 pipeline"
+     git push origin main
+     ```
+
+4. **Identifier**: Unmask `0417034852` in `README.md` or keep obfuscated?
+5. **Firepower (Option B)**:
+   - Add auto-verification script (`db-status.ts`) to check Neon/Supabase sync in the pipeline?
+   - Flesh out AI roles (`dolphin.ts`, `trent.ts`) or TRS token verification?
+   - Smart-trigger pings for `potential-chainsaw` (e.g., X post: “TRS-15 live. $5k bounty for exploits. Prove it weak or strong.”)?
+6. **Escalation**:
+   - Prep Burner SaaS (#3) or Adrenaline Contracts (#4)?
+   - NFT shutdown (#5) with Ethereum contract? Need wallet address.
+
+**Your Move, Daniel**:
+- `ZIP AND GO`: Package the repo with fixed `package.json` and workflows.
+- `ADD THIS FIRST: [module]`: Specify (e.g., AI logic, TRS token, pings).
+- `MATCH MAIN TO INTEGRATION NOW`: Already unified, but I can tweak further.
+
+Time’s 06:49 PM JST, July 17, 2025. Command me to keep this system alive.
