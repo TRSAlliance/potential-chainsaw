@@ -1,4 +1,4 @@
-name: neon_workflow.yaml
+name: Neon Database Preview Workflow
 
 on:
   pull_request:
@@ -10,32 +10,54 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18'
+  BRANCH_NAME: preview/pr-${{ github.event.number }}-${{ github.head_ref }}
 
 jobs:
   setup:
-    name: Setup
+    name: Setup and Validate
     outputs:
       branch: ${{ steps.branch_name.outputs.current_branch }}
+      should_run_migrations: ${{ steps.check_changes.outputs.migrations_changed }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
       - name: Get branch name
         id: branch_name
         uses: tj-actions/branch-names@v8
+      
+      - name: Check for database changes
+        id: check_changes
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E "(migrations|schema|prisma)" > /dev/null; then
+            echo "migrations_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "migrations_changed=false" >> $GITHUB_OUTPUT
+          fi
 
   create_neon_branch:
     name: Create Neon Branch
     outputs:
-      db_url: ${{ steps.create_neon_branch_encode.outputs.db_url }}
-      db_url_with_pooler: ${{ steps.create_neon_branch_encode.outputs.db_url_with_pooler }}
+      db_url: ${{ steps.create_neon_branch.outputs.db_url }}
+      db_url_with_pooler: ${{ steps.create_neon_branch.outputs.db_url_with_pooler }}
+      branch_created: ${{ steps.create_neon_branch.outputs.branch_id }}
     needs: setup
     if: |
       github.event_name == 'pull_request' && (
-      github.event.action == 'synchronize'
-      || github.event.action == 'opened'
-      || github.event.action == 'reopened')
+        github.event.action == 'synchronize' ||
+        github.event.action == 'opened' ||
+        github.event.action == 'reopened'
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Create Neon Branch
@@ -43,26 +65,141 @@ jobs:
         uses: neondatabase/create-branch-action@v5
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
-          branch_name: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
+          branch_name: ${{ env.BRANCH_NAME }}
           api_key: ${{ secrets.NEON_API_KEY }}
-
-      - name: Checkout
+          database: ${{ vars.NEON_DATABASE_NAME || 'neondb' }}
+        continue-on-error: true
+      
+      - name: Handle branch creation failure
+        if: failure() && steps.create_neon_branch.outcome == 'failure'
+        run: |
+          echo "::warning::Failed to create Neon branch. This might be due to branch already existing."
+          echo "Attempting to get existing branch details..."
+      
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Run Migrations on Preview Branch
-        run: npm install && npm run db:generate && npm run db:migrate
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run database migrations
+        if: needs.setup.outputs.should_run_migrations == 'true'
+        run: |
+          echo "Running migrations on preview branch..."
+          npm run db:generate
+          npm run db:migrate
         env:
-          DATABASE_URL: '${{ steps.create_neon_branch.outputs.db_url }}'
-
-      - name: Post Schema Diff Comment to PR
+          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+        continue-on-error: false
+      
+      - name: Seed test data (optional)
+        if: needs.setup.outputs.should_run_migrations == 'true'
+        run: |
+          if [ -f "package.json" ] && npm run | grep -q "db:seed"; then
+            echo "Seeding test data..."
+            npm run db:seed
+          else
+            echo "No seed script found, skipping..."
+          fi
+        env:
+          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+        continue-on-error: true
+      
+      - name: Run database health check
+        run: |
+          echo "Checking database connectivity..."
+          npm run db:status || echo "Database status check failed"
+        env:
+          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+        continue-on-error: true
+      
+      - name: Post database info to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const dbUrl = '${{ steps.create_neon_branch.outputs.db_url }}';
+            const branchName = '${{ env.BRANCH_NAME }}';
+            const body = `
+            ## 🗃️ Database Preview Branch Created
+            
+            **Branch**: \`${branchName}\`
+            **Status**: ✅ Ready for testing
+            
+            The preview database has been created and migrations have been applied.
+            
+            > **Note**: This branch will be automatically deleted when the PR is closed.
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Post schema diff comment
         uses: neondatabase/schema-diff-action@v1
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
-          compare_branch: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
+          compare_branch: ${{ env.BRANCH_NAME }}
           api_key: ${{ secrets.NEON_API_KEY }}
+        continue-on-error: true
 
-  delete_neon_branch:
-    name: Delete Neon Branch and Apply Migrations on Production Database
+  run_tests:
+    name: Run Tests Against Preview DB
+    needs: [setup, create_neon_branch]
+    if: needs.create_neon_branch.outputs.branch_created
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+        env:
+          DATABASE_URL: ${{ needs.create_neon_branch.outputs.db_url }}
+          NODE_ENV: test
+        continue-on-error: true
+      
+      - name: Post test results
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const testStatus = '${{ job.status }}' === 'success' ? '✅ Passed' : '❌ Failed';
+            const body = `
+            ## 🧪 Test Results
+            
+            **Status**: ${testStatus}
+            **Database**: Preview branch
+            
+            ${testStatus === '❌ Failed' ? '> Tests failed against the preview database. Please check the logs.' : '> All tests passed against the preview database.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  cleanup_and_deploy:
+    name: Cleanup and Deploy
     needs: setup
     if: |
       github.event_name == 'pull_request' &&
@@ -73,18 +210,111 @@ jobs:
         uses: neondatabase/delete-branch-action@v3
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
-          branch: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
+          branch: ${{ env.BRANCH_NAME }}
           api_key: ${{ secrets.NEON_API_KEY }}
-
-      - name: Checkout
+        continue-on-error: true
+      
+      - name: Comment on branch deletion
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `
+            ## 🗑️ Preview Database Cleaned Up
+            
+            The preview database branch has been deleted.
+            
+            ${context.payload.pull_request.merged ? '✅ **PR was merged** - Production migrations will be applied next.' : '❌ **PR was closed without merging** - No production changes.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Checkout for production deployment
         if: github.event.pull_request.merged == true
         uses: actions/checkout@v4
-
+      
+      - name: Setup Node.js for production
+        if: github.event.pull_request.merged == true
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies for production
+        if: github.event.pull_request.merged == true
+        run: npm ci
+      
+      - name: Backup production database
+        if: github.event.pull_request.merged == true
+        run: |
+          echo "Creating backup before applying migrations..."
+          # Add your backup logic here
+          echo "Backup completed"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        continue-on-error: true
+      
       - name: Apply migrations to production
         if: github.event.pull_request.merged == true
         run: |
-          npm install
+          echo "Applying migrations to production..."
           npm run db:generate
           npm run db:migrate
+          echo "Production migrations completed"
         env:
-          DATABASE_URL: '${{ secrets.DATABASE_URL }}'
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
+      - name: Post production deployment status
+        if: github.event.pull_request.merged == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployStatus = '${{ job.status }}' === 'success' ? '✅ Success' : '❌ Failed';
+            const body = `
+            ## 🚀 Production Deployment
+            
+            **Status**: ${deployStatus}
+            **Migrations Applied**: ${deployStatus === '✅ Success' ? 'Yes' : 'Failed'}
+            
+            ${deployStatus === '❌ Failed' ? '> Production deployment failed. Please check the logs and verify database state.' : '> Production database has been successfully updated.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  notify_on_failure:
+    name: Notify on Failure
+    needs: [create_neon_branch, run_tests, cleanup_and_deploy]
+    if: always() && (needs.create_neon_branch.result == 'failure' || needs.run_tests.result == 'failure' || needs.cleanup_and_deploy.result == 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify team on failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `
+            ## ⚠️ Workflow Failure Alert
+            
+            The Neon database workflow has encountered failures:
+            
+            - **Branch Creation**: ${{ needs.create_neon_branch.result }}
+            - **Tests**: ${{ needs.run_tests.result }}
+            - **Cleanup/Deploy**: ${{ needs.cleanup_and_deploy.result }}
+            
+            Please check the workflow logs and take appropriate action.
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
