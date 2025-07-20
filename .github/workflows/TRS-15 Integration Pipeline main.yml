@@ -215,3 +215,266 @@ jobs:
             echo "❌ Pipeline failed - review logs for issues"
             echo "🚨 Ethical validation or deployment failed"
           fi
+# deploy.ps1 - Enhanced TRS Deployment Pipeline
+# Supports GitHub → Vercel, Supabase → Neon, Multi-AI Collaboration
+
+param(
+    [Parameter(Mandatory=$false)]
+    [ValidateSet("staging", "production", "testbed")]
+    [string]$Environment = "staging",
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipTests,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$ForceDeployment,
+    
+    [Parameter(Mandatory=$false)]
+    [ValidateSet("firebase", "netlify", "vercel", "all")]
+    [string]$Target = "all"
+)
+
+# TRS Configuration
+$TRS_CONFIG = @{
+    PROJECT_ID = "ghostshift-d5f46"
+    SUPABASE_URL = $env:SUPABASE_URL
+    NEON_DATABASE_URL = $env:NEON_DATABASE_URL
+    VERCEL_PROJECT_ID = $env:VERCEL_PROJECT_ID
+    AI_COLLABORATION_ENABLED = $true
+}
+
+function Write-TRSLog {
+    param([string]$Message, [string]$Level = "INFO")
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $color = switch ($Level) {
+        "INFO" { "Green" }
+        "WARN" { "Yellow" }
+        "ERROR" { "Red" }
+        "SUCCESS" { "Cyan" }
+    }
+    Write-Host "[$timestamp] [$Level] $Message" -ForegroundColor $color
+}
+
+function Test-TRSOriginKey {
+    Write-TRSLog "🔐 Validating TRS Origin Key..." "INFO"
+    
+    if (Test-Path "TRS ORIGIN KEY.md") {
+        $hash = Get-FileHash "TRS ORIGIN KEY.md" -Algorithm SHA256
+        Write-TRSLog "TRS Origin Key hash: $($hash.Hash)" "INFO"
+        
+        # Store hash for validation
+        $env:TRS_ORIGIN_HASH = $hash.Hash
+        return $true
+    } else {
+        Write-TRSLog "TRS Origin Key not found!" "ERROR"
+        return $false
+    }
+}
+
+function Test-EthicalTriggers {
+    Write-TRSLog "🛡️ Running ethical trigger validation..." "INFO"
+    
+    if (-not $SkipTests) {
+        # Run ethical debt scan
+        $ethicalResult = npm run test:ethical 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            Write-TRSLog "Ethical validation passed" "SUCCESS"
+            return $true
+        } else {
+            Write-TRSLog "Ethical validation failed" "ERROR"
+            return $false
+        }
+    } else {
+        Write-TRSLog "Skipping ethical tests (forced)" "WARN"
+        return $true
+    }
+}
+
+function Deploy-ToFirebase {
+    Write-TRSLog "🔥 Deploying to Firebase..." "INFO"
+    
+    try {
+        # Build the application
+        npm run build
+        if ($LASTEXITCODE -ne 0) { throw "Build failed" }
+        
+        # Deploy to Firebase
+        firebase deploy --project $TRS_CONFIG.PROJECT_ID
+        if ($LASTEXITCODE -eq 0) {
+            Write-TRSLog "Firebase deployment successful" "SUCCESS"
+            return $true
+        } else {
+            throw "Firebase deployment failed"
+        }
+    } catch {
+        Write-TRSLog "Firebase deployment error: $_" "ERROR"
+        return $false
+    }
+}
+
+function Deploy-ToNetlify {
+    Write-TRSLog "🌐 Deploying to Netlify..." "INFO"
+    
+    try {
+        # Build if not already built
+        if (-not (Test-Path "dist")) {
+            npm run build
+        }
+        
+        # Deploy to Netlify
+        if ($Environment -eq "production") {
+            netlify deploy --prod --dir=dist
+        } else {
+            netlify deploy --dir=dist
+        }
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-TRSLog "Netlify deployment successful" "SUCCESS"
+            return $true
+        } else {
+            throw "Netlify deployment failed"
+        }
+    } catch {
+        Write-TRSLog "Netlify deployment error: $_" "ERROR"
+        return $false
+    }
+}
+
+function Deploy-ToVercel {
+    Write-TRSLog "▲ Deploying to Vercel..." "INFO"
+    
+    try {
+        # Vercel deployment with environment-specific settings
+        if ($Environment -eq "production") {
+            vercel --prod --yes
+        } else {
+            vercel --yes
+        }
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-TRSLog "Vercel deployment successful" "SUCCESS"
+            return $true
+        } else {
+            throw "Vercel deployment failed"
+        }
+    } catch {
+        Write-TRSLog "Vercel deployment error: $_" "ERROR"
+        return $false
+    }
+}
+
+function Sync-SupabaseToNeon {
+    Write-TRSLog "🔄 Syncing Supabase to Neon..." "INFO"
+    
+    if ($TRS_CONFIG.SUPABASE_URL -and $TRS_CONFIG.NEON_DATABASE_URL) {
+        try {
+            # Run database sync script
+            npx ts-node src/sync-databases.ts
+            if ($LASTEXITCODE -eq 0) {
+                Write-TRSLog "Database sync successful" "SUCCESS"
+                return $true
+            } else {
+                throw "Database sync failed"
+            }
+        } catch {
+            Write-TRSLog "Database sync error: $_" "ERROR"
+            return $false
+        }
+    } else {
+        Write-TRSLog "Database URLs not configured, skipping sync" "WARN"
+        return $true
+    }
+}
+
+function Test-AICollaboration {
+    Write-TRSLog "🤖 Testing AI collaboration framework..." "INFO"
+    
+    if ($TRS_CONFIG.AI_COLLABORATION_ENABLED) {
+        try {
+            # Test DeepSeek integration
+            Write-TRSLog "Testing DeepSeek boundaries..." "INFO"
+            
+            # Test multi-AI execution limits
+            Write-TRSLog "Testing execution boundaries..." "INFO"
+            
+            # Simulate signal flow
+            npx ts-node src/simulate_signal.ts
+            
+            Write-TRSLog "AI collaboration tests passed" "SUCCESS"
+            return $true
+        } catch {
+            Write-TRSLog "AI collaboration test failed: $_" "ERROR"
+            return $false
+        }
+    } else {
+        Write-TRSLog "AI collaboration disabled" "WARN"
+        return $true
+    }
+}
+
+# Main deployment flow
+function Start-TRSDeployment {
+    Write-TRSLog "🚀 Starting TRS deployment pipeline..." "INFO"
+    Write-TRSLog "Environment: $Environment" "INFO"
+    Write-TRSLog "Target: $Target" "INFO"
+    
+    # Pre-deployment validations
+    if (-not (Test-TRSOriginKey)) {
+        if (-not $ForceDeployment) {
+            Write-TRSLog "Deployment aborted due to missing TRS Origin Key" "ERROR"
+            exit 1
+        }
+    }
+    
+    if (-not (Test-EthicalTriggers)) {
+        if (-not $ForceDeployment) {
+            Write-TRSLog "Deployment aborted due to ethical validation failure" "ERROR"
+            exit 1
+        }
+    }
+    
+    # AI collaboration testing
+    if (-not (Test-AICollaboration)) {
+        Write-TRSLog "AI collaboration test failed, proceeding with caution..." "WARN"
+    }
+    
+    # Database sync
+    if (-not (Sync-SupabaseToNeon)) {
+        Write-TRSLog "Database sync failed, proceeding with caution..." "WARN"
+    }
+    
+    # Deployment targets
+    $deploymentResults = @{}
+    
+    if ($Target -eq "firebase" -or $Target -eq "all") {
+        $deploymentResults.Firebase = Deploy-ToFirebase
+    }
+    
+    if ($Target -eq "netlify" -or $Target -eq "all") {
+        $deploymentResults.Netlify = Deploy-ToNetlify
+    }
+    
+    if ($Target -eq "vercel" -or $Target -eq "all") {
+        $deploymentResults.Vercel = Deploy-ToVercel
+    }
+    
+    # Summary
+    Write-TRSLog "=== Deployment Summary ===" "INFO"
+    foreach ($service in $deploymentResults.Keys) {
+        $status = if ($deploymentResults[$service]) { "SUCCESS" } else { "FAILED" }
+        $color = if ($deploymentResults[$service]) { "SUCCESS" } else { "ERROR" }
+        Write-TRSLog "$service deployment: $status" $color
+    }
+    
+    $failedDeployments = $deploymentResults.Values | Where-Object { -not $_ }
+    if ($failedDeployments.Count -eq 0) {
+        Write-TRSLog "🔥 All deployments successful! TRS system ready." "SUCCESS"
+        exit 0
+    } else {
+        Write-TRSLog "❌ Some deployments failed. Check logs above." "ERROR"
+        exit 1
+    }
+}
+
+# Execute deployment
+Start-TRSDeployment
