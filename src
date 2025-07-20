@@ -1,1 +1,266 @@
+// src/sync-databases.ts
+// Secure sync between Supabase and Neon for TRS system integrity
 
+import { createClient } from '@supabase/supabase-js';
+import { Client } from 'pg';
+import { createHash } from 'crypto';
+
+interface SyncConfig {
+  supabaseUrl: string;
+  supabaseKey: string;
+  neonConnectionString: string;
+  tables: string[];
+  batchSize: number;
+}
+
+interface SyncResult {
+  table: string;
+  recordsProcessed: number;
+  recordsInserted: number;
+  recordsUpdated: number;
+  errors: string[];
+  hash: string;
+}
+
+class TRSDatabaseSync {
+  private supabase: any;
+  private neonClient: Client;
+  private config: SyncConfig;
+
+  constructor(config: SyncConfig) {
+    this.config = config;
+    this.supabase = createClient(config.supabaseUrl, config.supabaseKey);
+    this.neonClient = new Client({
+      connectionString: config.neonConnectionString,
+      ssl: { rejectUnauthorized: false }
+    });
+  }
+
+  async connect(): Promise<void> {
+    try {
+      await this.neonClient.connect();
+      console.log('🔗 Connected to Neon database');
+    } catch (error) {
+      console.error('❌ Failed to connect to Neon:', error);
+      throw error;
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    await this.neonClient.end();
+    console.log('🔌 Disconnected from Neon database');
+  }
+
+  private generateDataHash(data: any[]): string {
+    const hash = createHash('sha256');
+    hash.update(JSON.stringify(data));
+    return hash.digest('hex');
+  }
+
+  private async ensureTableExists(tableName: string, sampleRecord: any): Promise<void> {
+    try {
+      // Create table if it doesn't exist (simplified schema)
+      const columns = Object.keys(sampleRecord)
+        .map(key => `${key} TEXT`)
+        .join(', ');
+      
+      const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS ${tableName} (
+          id SERIAL PRIMARY KEY,
+          ${columns},
+          sync_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          sync_hash TEXT,
+          UNIQUE(${Object.keys(sampleRecord)[0] || 'id'})
+        );
+      `;
+      
+      await this.neonClient.query(createTableQuery);
+      console.log(`✅ Table ${tableName} ready in Neon`);
+    } catch (error) {
+      console.error(`❌ Failed to create table ${tableName}:`, error);
+      throw error;
+    }
+  }
+
+  async syncTable(tableName: string): Promise<SyncResult> {
+    const result: SyncResult = {
+      table: tableName,
+      recordsProcessed: 0,
+      recordsInserted: 0,
+      recordsUpdated: 0,
+      errors: [],
+      hash: ''
+    };
+
+    try {
+      console.log(`🔄 Syncing table: ${tableName}`);
+      
+      // Fetch data from Supabase
+      const { data: supabaseData, error } = await this.supabase
+        .from(tableName)
+        .select('*')
+        .limit(this.config.batchSize);
+
+      if (error) {
+        result.errors.push(`Supabase fetch error: ${error.message}`);
+        return result;
+      }
+
+      if (!supabaseData || supabaseData.length === 0) {
+        console.log(`📭 No data found in ${tableName}`);
+        return result;
+      }
+
+      // Generate hash for data integrity
+      result.hash = this.generateDataHash(supabaseData);
+      result.recordsProcessed = supabaseData.length;
+
+      // Ensure table exists in Neon
+      await this.ensureTableExists(tableName, supabaseData[0]);
+
+      // Sync each record
+      for (const record of supabaseData) {
+        try {
+          const columns = Object.keys(record);
+          const values = Object.values(record);
+          const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+          
+          // Upsert query
+          const upsertQuery = `
+            INSERT INTO ${tableName} (${columns.join(', ')}, sync_hash)
+            VALUES (${placeholders}, $${values.length + 1})
+            ON CONFLICT (${columns[0]})
+            DO UPDATE SET
+              ${columns.slice(1).map((col, i) => `${col} = $${i + 2}`).join(', ')},
+              sync_timestamp = CURRENT_TIMESTAMP,
+              sync_hash = $${values.length + 1}
+          `;
+          
+          await this.neonClient.query(upsertQuery, [...values, result.hash]);
+          result.recordsInserted++;
+          
+        } catch (recordError: any) {
+          result.errors.push(`Record sync error: ${recordError.message}`);
+          console.error(`❌ Failed to sync record:`, recordError);
+        }
+      }
+
+      console.log(`✅ Synced ${result.recordsInserted}/${result.recordsProcessed} records from ${tableName}`);
+      
+    } catch (error: any) {
+      result.errors.push(`Table sync error: ${error.message}`);
+      console.error(`❌ Failed to sync table ${tableName}:`, error);
+    }
+
+    return result;
+  }
+
+  async validateSync(tableName: string, originalHash: string): Promise<boolean> {
+    try {
+      // Fetch synced data from Neon
+      const result = await this.neonClient.query(
+        `SELECT * FROM ${tableName} WHERE sync_hash = $1 ORDER BY id`,
+        [originalHash]
+      );
+      
+      const neonHash = this.generateDataHash(result.rows);
+      const isValid = neonHash === originalHash;
+      
+      console.log(
+        isValid 
+          ? `✅ Sync validation passed for ${tableName}` 
+          : `❌ Sync validation failed for ${tableName}`
+      );
+      
+      return isValid;
+    } catch (error) {
+      console.error(`❌ Validation error for ${tableName}:`, error);
+      return false;
+    }
+  }
+
+  async performFullSync(): Promise<SyncResult[]> {
+    const results: SyncResult[] = [];
+    
+    console.log('🚀 Starting TRS database sync...');
+    console.log(`📊 Tables to sync: ${this.config.tables.join(', ')}`);
+    
+    for (const table of this.config.tables) {
+      const result = await this.syncTable(table);
+      results.push(result);
+      
+      // Validate sync integrity
+      if (result.hash && result.errors.length === 0) {
+        const isValid = await this.validateSync(table, result.hash);
+        if (!isValid) {
+          result.errors.push('Sync validation failed');
+        }
+      }
+    }
+    
+    // Summary
+    const totalRecords = results.reduce((sum, r) => sum + r.recordsProcessed, 0);
+    const totalErrors = results.reduce((sum, r) => sum + r.errors.length, 0);
+    
+    console.log('=== Sync Summary ===');
+    console.log(`📈 Total records processed: ${totalRecords}`);
+    console.log(`❌ Total errors: ${totalErrors}`);
+    
+    results.forEach(result => {
+      console.log(`📋 ${result.table}: ${result.recordsInserted}/${result.recordsProcessed} synced`);
+      if (result.errors.length > 0) {
+        console.log(`   Errors: ${result.errors.join(', ')}`);
+      }
+    });
+    
+    return results;
+  }
+}
+
+// Configuration
+const syncConfig: SyncConfig = {
+  supabaseUrl: process.env.SUPABASE_URL || '',
+  supabaseKey: process.env.SUPABASE_ANON_KEY || '',
+  neonConnectionString: process.env.NEON_DATABASE_URL || '',
+  tables: [
+    'signals',
+    'trust_metrics',
+    'ethical_audits',
+    'ai_collaborations',
+    'trs_protocols'
+  ],
+  batchSize: 1000
+};
+
+// Main execution
+async function main() {
+  const sync = new TRSDatabaseSync(syncConfig);
+  
+  try {
+    await sync.connect();
+    const results = await sync.performFullSync();
+    
+    // Check for critical errors
+    const criticalErrors = results.filter(r => r.errors.length > 0);
+    if (criticalErrors.length > 0) {
+      console.error('🚨 Critical sync errors detected');
+      process.exit(1);
+    } else {
+      console.log('🎉 Database sync completed successfully');
+      process.exit(0);
+    }
+    
+  } catch (error) {
+    console.error('💥 Sync process failed:', error);
+    process.exit(1);
+  } finally {
+    await sync.disconnect();
+  }
+}
+
+// Execute if run directly
+if (require.main === module) {
+  main().catch(console.error);
+}
+
+export { TRSDatabaseSync, SyncConfig, SyncResult };
