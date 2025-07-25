@@ -1,24 +1,30 @@
-Write-Host "🚀 TRS Deployment Started..."
+Write-Host "🚀 [TRS] Deployment Started - Potential Chainsaw"
 
-# Sync from Git
+# Step 1: Sync latest from Git
+Write-Host "`n📡 Pulling latest changes from GitHub..."
 git pull origin main
 
-# Build the project
-Write-Host "🔧 Installing dependencies..."
+# Step 2: Install and build
+Write-Host "`n🔧 Installing NPM dependencies..."
 npm install
+
+Write-Host "`n🏗️ Building project for production..."
 npm run build
 
-# Deploy to Netlify
-Write-Host "🌐 Deploying to Netlify..."
-netlify deploy --prod
+# Step 3: Deploy to Netlify
+Write-Host "`n🌐 Deploying to Netlify..."
+netlify deploy --prod --dir=build
 
-# Deploy to Firebase Hosting (and Firestore rules if needed)
-Write-Host "🔥 Deploying to Firebase..."
+# Step 4: Deploy to Firebase
+Write-Host "`n🔥 Deploying to Firebase Hosting + Firestore..."
 firebase deploy --only hosting,firestore
 
-Write-Host "✅ Deployment Complete."
-Log-TRSAction "Deploying to Netlify..."
-2025-07-12 03:42:11 | Deploying to Netlify...
-2025-07-12 03:42:45 | Deploying to Firebase...
-2025-07-12 03:43:21 | ✅ Deployment Complete.
+# Optional Logging Block (can be redirected to a file or console)
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+Write-Host "`n✅ Deployment Complete at $timestamp"
+Write-Host "📝 Log Summary:"
+Write-Host "$timestamp | Git Pull, Build, Deploy to Netlify + Firebase completed."
+
+# Future: Append to deployment log file
+# Add-Content -Path "./deploy.log" -Value "$timestamp | Deployment successful."
 
