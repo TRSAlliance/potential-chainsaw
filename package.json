@@ -1,25 +1,29 @@
 {
   "name": "trsalliance-potential-chainsaw",
-  "version": "1.0.0",
-  "description": "TRS Alliance frontend project - potential chainsaw",
+  "version": "1.0.1",
+  "description": "TRS Alliance frontend - Potential Chainsaw release. React + Firebase + Netlify integrated.",
   "main": "src/index.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "deploy": "netlify deploy --prod --dir=build",
-    "firebase": "firebase deploy"
+    "deploy:netlify": "netlify deploy --prod --dir=build",
+    "deploy:firebase": "firebase deploy",
+    "deploy": "npm run build && npm run deploy:netlify"
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "firebase": "^10.12.0"
   },
   "devDependencies": {
     "react-scripts": "^5.0.1",
     "netlify-cli": "^12.0.0",
     "firebase-tools": "^12.0.0"
   },
-  "author": "Your Name",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Daniel K. L. Hatton",
   "license": "MIT"
 }
-
