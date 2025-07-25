@@ -1,29 +1,45 @@
 {
-  "name": "trsalliance-potential-chainsaw",
-  "version": "1.0.1",
-  "description": "TRS Alliance frontend - Potential Chainsaw release. React + Firebase + Netlify integrated.",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "deploy:netlify": "netlify deploy --prod --dir=build",
-    "deploy:firebase": "firebase deploy",
-    "deploy": "npm run build && npm run deploy:netlify"
+  "version": "1.0.0",
+  "timestamp": "2025-07-25T11:38:00Z",
+  "origin": "TRS-CLI",
+  "run_id": "6789123456",
+  "verified_by": "TRS-CLI Security Verification v2.7",
+  "scan_level": 15,
+  "results": {
+    "critical_issues": 3,
+    "summary": [
+      {
+        "id": "CVE-2023-TRS004",
+        "file": "src/core/auth.js",
+        "description": "Unsanitized input leads to possible credential leakage.",
+        "severity": "critical",
+        "recommendation": "Apply input validation and encode output."
+      },
+      {
+        "id": "TRS-CHN-019",
+        "file": "src/lib/chainsaw.js",
+        "description": "Improper permission fallback in chainsaw deployment.",
+        "severity": "critical",
+        "recommendation": "Enforce token check before deployment fallback."
+      },
+      {
+        "id": "TRS-MEM-021",
+        "file": "src/utils/memory.js",
+        "description": "Trust signal improperly logged, allowing amnesia bypass.",
+        "severity": "critical",
+        "recommendation": "Bind memory writes to encrypted crew witness key."
+      }
+    ]
   },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "firebase": "^10.12.0"
+  "actions_taken": {
+    "shields_deployed": true,
+    "notified": ["#trs-alerts", "Sentinel-Core"],
+    "auto_lockdown": true
   },
-  "devDependencies": {
-    "react-scripts": "^5.0.1",
-    "netlify-cli": "^12.0.0",
-    "firebase-tools": "^12.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "author": "Daniel K. L. Hatton",
-  "license": "MIT"
+  "metadata": {
+    "artifact_id": "chainsaw-0782",
+    "hash": "d43f98ef03f27ba6b0cdd9f8b3c782aa8b11630119e4bba911f67409adbcf9de",
+    "signed_by": "core-sentinel@trsalliance.org",
+    "sarif_link": "https://github.com/TRSAlliance/sentinel-cli/actions/runs/6789123456/artifacts"
+  }
 }
