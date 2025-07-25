@@ -1,0 +1,29 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Crew {
+  id        String     @id @default(uuid())
+  name      String
+  region    String
+  createdAt DateTime   @default(now())
+  operators Operator[]
+}
+
+model Operator {
+  id          String   @id @default(uuid())
+  name        String
+  role        String
+  trustScore  Int
+  isActive    Boolean  @default(true)
+  crewId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  crew        Crew     @relation(fields: [crewId], references: [id])
+}
