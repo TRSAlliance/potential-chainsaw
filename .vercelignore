@@ -1,8 +1,5 @@
-api/
-src/
-pages/
-node_modules/
-*.js
-*.ts
-*.tsx
-*.jsx
+# ignore everything
+*
+# allow only the static site files
+!index.html
+!vercel.json
