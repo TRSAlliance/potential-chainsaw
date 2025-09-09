@@ -29,3 +29,13 @@
   ],
   "buildCommand": "npm run build"
 }
+{
+  "buildCommand": "npm run build || echo 'No build needed'",
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
