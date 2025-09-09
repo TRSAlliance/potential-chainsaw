@@ -1,0 +1,8 @@
+api/
+src/
+pages/
+node_modules/
+*.js
+*.ts
+*.tsx
+*.jsx
