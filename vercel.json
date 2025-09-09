@@ -1,0 +1,31 @@
+{
+  "functions": {
+    "app.html": {
+      "@vercel/static": true
+    }
+  },
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/app",
+      "dest": "/dist/index.html"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/dist/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "buildCommand": "npm run build"
+}
