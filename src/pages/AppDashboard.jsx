@@ -1,6 +1,6 @@
 // src/pages/AppDashboard.jsx
 import { Link } from "react-router-dom";
-import { LayoutGrid, BookOpen, Newspaper, Brain, Rocket } from "lucide-react";
+import { BookOpen, Newspaper, Brain, Rocket } from "lucide-react";
 
 export default function AppDashboard() {
   return (
@@ -33,6 +33,7 @@ export default function AppDashboard() {
           <h3 className="text-xl font-bold">System Panels</h3>
           <p className="text-slate-400 text-sm">Security, command, integrations.</p>
         </Link>
+
       </div>
     </div>
   );
