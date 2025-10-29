@@ -121,7 +121,7 @@ jobs:
           echo "🧠 Testing DeepSeek integration..."
           # Simulate DeepSeek decision pathway
           
-      - name: Dolphin Execution Boundary Test
+      - name: chatgpt Execution Boundary Test
         run: |
           echo "🐬 Testing Dolphin execution boundaries..."
           # Test autonomous execution limits
