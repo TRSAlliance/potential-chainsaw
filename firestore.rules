@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isTRSUser() {
+      return request.auth != null 
+             && request.auth.token.trs_verified == true;
+    }
+    
+    function isSystem() {
+      return request.time < timestamp.date(9999,1,1) 
+             && request.auth.token.system == true;
+    }
+
+    match /signals/{id} {
+      allow read: if isTRSUser();
+      allow write: if isTRSUser() && request.resource.data.keys().hasAll([
+        'signal_type', 'value', 'trust_score', 'created_at'
+      ]);
+    }
+
+    match /trust_metrics/{id} {
+      allow read: if isTRSUser();
+      allow write: if isSystem();
+    }
+
+    match /ethical_audits/{id} {
+      allow read: if isTRSUser();
+      allow write: if isSystem();
+    }
+
+    match /ai_collaborations/{id} {
+      allow read: if isTRSUser();
+      allow write: if isSystem();
+    }
+
+    match /trs_protocols/{id} {
+      allow read: if true; // public
+      allow write: if isSystem();
+    }
+  }
+}
