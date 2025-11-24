@@ -14,10 +14,8 @@ import {
   Play
 } from 'lucide-react';
 
-// Accessibility Context
 const AccessibilityContext = createContext();
 
-// Accessibility Settings Reducer
 const accessibilityReducer = (state, action) => {
   switch (action.type) {
     case 'TOGGLE_HIGH_CONTRAST':
@@ -39,7 +37,6 @@ const accessibilityReducer = (state, action) => {
   }
 };
 
-// Speech Synthesis Hook
 const useSpeechSynthesis = () => {
   const [speaking, setSpeaking] = React.useState(false);
   const [supported, setSupported] = React.useState(false);
@@ -68,7 +65,6 @@ const useSpeechSynthesis = () => {
   return { speak, stop, speaking, supported };
 };
 
-// Screen Reader Announcements
 const ScreenReaderAnnouncer = ({ message, priority = 'polite' }) => {
   return (
     <div
@@ -81,7 +77,6 @@ const ScreenReaderAnnouncer = ({ message, priority = 'polite' }) => {
   );
 };
 
-// Focus Management Hook
 const useFocusManagement = () => {
   const [focusedElement, setFocusedElement] = React.useState(null);
 
@@ -123,7 +118,6 @@ const useFocusManagement = () => {
   return { setFocus, trapFocus, focusedElement };
 };
 
-// Accessibility Provider Component
 export const AccessibilityProvider = ({ children }) => {
   const [settings, dispatch] = useReducer(accessibilityReducer, {
     highContrast: false,
@@ -138,32 +132,27 @@ export const AccessibilityProvider = ({ children }) => {
   const { speak, stop, speaking } = useSpeechSynthesis();
   const focusManagement = useFocusManagement();
 
-  // Apply accessibility settings to document
   useEffect(() => {
     const root = document.documentElement;
     
-    // High Contrast
     if (settings.highContrast) {
       root.classList.add('high-contrast');
     } else {
       root.classList.remove('high-contrast');
     }
 
-    // Reduced Motion
     if (settings.reducedMotion) {
       root.classList.add('reduce-motion');
     } else {
       root.classList.remove('reduce-motion');
     }
 
-    // Enhanced Focus
     if (settings.enhancedFocus) {
       root.classList.add('enhanced-focus');
     } else {
       root.classList.remove('enhanced-focus');
     }
 
-    // Font Size
     root.style.setProperty('--accessibility-font-scale', 
       settings.fontSize === 'small' ? '0.875' :
       settings.fontSize === 'large' ? '1.125' :
@@ -171,18 +160,16 @@ export const AccessibilityProvider = ({ children }) => {
     );
   }, [settings]);
 
-  // Keyboard Navigation
   useEffect(() => {
     if (!settings.keyboardNavigation) return;
 
     const handleKeyboardNav = (e) => {
-      // Skip to main content with 'M' key
+    
       if (e.key === 'm' && e.altKey) {
         const main = document.querySelector('main');
         if (main) main.focus();
       }
       
-      // Accessibility menu with 'A' key
       if (e.key === 'a' && e.altKey && e.ctrlKey) {
         const accessibilityMenu = document.getElementById('accessibility-menu');
         if (accessibilityMenu) accessibilityMenu.focus();
@@ -210,7 +197,6 @@ export const AccessibilityProvider = ({ children }) => {
   );
 };
 
-// Custom CSS for accessibility features
 const AccessibilityStyles = () => (
   <style jsx global>{`
     .high-contrast {
@@ -252,7 +238,6 @@ const AccessibilityStyles = () => (
   `}</style>
 );
 
-// Accessibility Control Panel
 export const AccessibilityControlPanel = ({ onClose }) => {
   const { settings, dispatch, speak, stop, speaking } = useAccessibility();
 
@@ -336,7 +321,6 @@ export const AccessibilityControlPanel = ({ onClose }) => {
   );
 };
 
-// Hook to use accessibility context
 export const useAccessibility = () => {
   const context = useContext(AccessibilityContext);
   if (!context) {
@@ -345,5 +329,4 @@ export const useAccessibility = () => {
   return context;
 };
 
-// Export components for easy use
 export { ScreenReaderAnnouncer, useSpeechSynthesis, useFocusManagement };
