@@ -1,4 +1,3 @@
-# .github/workflows/trs15-deploy.yml
 name: TRS-15 Deploy & Verify
 
 on:
