@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-// Three.js Performance Optimizer
 export const useThreeJSOptimizer = () => {
   const [isLowPerformance, setIsLowPerformance] = useState(false);
   const frameCount = useRef(0);
@@ -8,7 +6,7 @@ export const useThreeJSOptimizer = () => {
   const animationId = useRef(null);
 
   useEffect(() => {
-    // Detect device performance
+   
     const detectPerformance = () => {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -21,17 +19,14 @@ export const useThreeJSOptimizer = () => {
       const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
       const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : '';
       
-      // Check for low-end devices
       const lowEndKeywords = ['intel', 'integrated', 'mobile', 'adreno 3', 'mali-4'];
       const isLowEnd = lowEndKeywords.some(keyword => 
         renderer.toLowerCase().includes(keyword)
       );
 
-      // Memory check
       const memoryMB = navigator.deviceMemory || 4;
       const isLowMemory = memoryMB < 4;
 
-      // CPU cores check
       const cpuCores = navigator.hardwareConcurrency || 4;
       const isLowCore = cpuCores < 4;
 
@@ -42,8 +37,7 @@ export const useThreeJSOptimizer = () => {
   }, []);
 
   const optimizeFrame = (callback) => {
-    if (isLowPerformance) {
-      // Reduce frame rate for low-performance devices
+    if (isLowPerformance) {  
       const now = performance.now();
       if (now - lastTime.current < 33) { // ~30fps instead of 60fps
         animationId.current = requestAnimationFrame(() => optimizeFrame(callback));
@@ -55,7 +49,6 @@ export const useThreeJSOptimizer = () => {
     callback();
     frameCount.current++;
 
-    // Dynamic quality adjustment
     if (frameCount.current % 60 === 0) {
       const fps = 60000 / (performance.now() - lastTime.current);
       if (fps < 30 && !isLowPerformance) {
@@ -84,7 +77,6 @@ export const useThreeJSOptimizer = () => {
   };
 };
 
-// Resource Monitor Hook
 export const useResourceMonitor = () => {
   const [metrics, setMetrics] = useState({
     memory: 0,
@@ -96,7 +88,7 @@ export const useResourceMonitor = () => {
     const startTime = performance.now();
     
     const updateMetrics = () => {
-      // Memory usage (if available) - Fixed TypeScript syntax
+     
       const memory = performance.memory;
       if (memory) {
         setMetrics(prev => ({
@@ -105,7 +97,6 @@ export const useResourceMonitor = () => {
         }));
       }
 
-      // Load time
       const loadTime = performance.now() - startTime;
       setMetrics(prev => ({
         ...prev,
@@ -120,7 +111,6 @@ export const useResourceMonitor = () => {
   return metrics;
 };
 
-// Performance Dashboard Component
 export const PerformanceDashboard = ({ enabled = false }) => {
   const metrics = useResourceMonitor();
   const { isLowPerformance } = useThreeJSOptimizer();
