@@ -1,4 +1,3 @@
-// src/pages/AppDashboard.jsx
 import { Link } from "react-router-dom";
 import { BookOpen, Newspaper, Brain, Rocket } from "lucide-react";
 
