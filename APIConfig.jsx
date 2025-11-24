@@ -1,4 +1,3 @@
-// API Configuration with Browser-Compatible Environment Variables
 const API_CONFIG = {
   BASE_URL: window.location.hostname === 'localhost' 
     ? 'http://localhost:5000' 
