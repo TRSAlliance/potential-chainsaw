@@ -1,6 +1,5 @@
 import { base44 } from './base44Client';
 
-
 export const Agent = base44.entities.Agent;
 
 export const Task = base44.entities.Task;
@@ -25,7 +24,4 @@ export const AIDeploymentMatrix = base44.entities.AIDeploymentMatrix;
 
 export const APIKey = base44.entities.APIKey;
 
-
-
-// auth sdk:
 export const User = base44.auth;
