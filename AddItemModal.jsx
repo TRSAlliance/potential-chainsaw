@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Plus, X } from 'lucide-react';
-
 export default function AddItemModal({ isOpen, onClose, onSubmit }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -16,7 +15,6 @@ export default function AddItemModal({ isOpen, onClose, onSubmit }) {
     image_url: '',
     usage_count: 0
   });
-
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
@@ -29,21 +27,18 @@ export default function AddItemModal({ isOpen, onClose, onSubmit }) {
       usage_count: 0
     });
   };
-
   const handleChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-slate-800 border-slate-700 text-slate-100">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Add New Asset</DialogTitle>
         </DialogHeader>
-        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-slate-200">Asset Name</Label>
@@ -56,7 +51,6 @@ export default function AddItemModal({ isOpen, onClose, onSubmit }) {
               required
             />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="description" className="text-slate-200">Description</Label>
             <Textarea
@@ -68,7 +62,6 @@ export default function AddItemModal({ isOpen, onClose, onSubmit }) {
               rows={3}
             />
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-slate-200">Type</Label>
@@ -84,7 +77,6 @@ export default function AddItemModal({ isOpen, onClose, onSubmit }) {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="space-y-2">
               <Label className="text-slate-200">Status</Label>
               <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
@@ -100,7 +92,6 @@ export default function AddItemModal({ isOpen, onClose, onSubmit }) {
               </Select>
             </div>
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="image_url" className="text-slate-200">Image URL (Optional)</Label>
             <Input
@@ -111,7 +102,6 @@ export default function AddItemModal({ isOpen, onClose, onSubmit }) {
               placeholder="https://example.com/image.jpg"
             />
           </div>
-
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="border-slate-600 text-slate-200">
               <X className="w-4 h-4 mr-2" />
